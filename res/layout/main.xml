@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     
-	<at.ist.tugraz.threadpaint.PaintView
+	<at.droidcode.threadpaint.PaintView
     	android:id="@+id/paint_view"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"/>
