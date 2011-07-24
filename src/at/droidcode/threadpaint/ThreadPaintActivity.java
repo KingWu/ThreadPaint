@@ -18,6 +18,7 @@ package at.droidcode.threadpaint;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -53,5 +54,11 @@ public class ThreadPaintActivity extends Activity {
 			default:
 				return super.onOptionsItemSelected(item);
 		}
+	}
+	
+	@Override
+	public void onDestroy(){
+		Log.w(TAG,"PaintView destroyed");
+		super.onDestroy();
 	}
 }
