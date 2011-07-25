@@ -11,23 +11,24 @@ import android.view.SurfaceHolder;
 
 public class PaintThread extends Thread {
 	static final String TAG = "THREADPAINT";
-	
-	private static Bitmap workingBitmap;
+	static final int BGCOLOR = Color.LTGRAY;
 
 	private boolean keepRunning = false;
 	private boolean getPathCalled = false;
 
-	private Rect rectCanvas;
-
+	private Bitmap workingBitmap;
+	private Canvas workingCanvas;
 	private Path pathToDraw;
-	private Canvas mCanvas;
-
 	private Paint pathPaint;
 
-	private SurfaceHolder mSurfaceHolder;
+	private Rect rectCanvas;
+
+	private final SurfaceHolder mSurfaceHolder;
 
 	public PaintThread(SurfaceHolder surfaceHolder) {
 		mSurfaceHolder = surfaceHolder;
+		workingBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+		workingCanvas = new Canvas();
 		pathToDraw = new Path();
 
 		pathPaint = new Paint();
@@ -43,31 +44,31 @@ public class PaintThread extends Thread {
 
 	@Override
 	public void run() {
+		clearCanvas();
 		while (keepRunning) {
-			Canvas c = null;
+			Canvas canvas = null;
 			try {
 				synchronized (this) {
-					c = mSurfaceHolder.lockCanvas();
-					doDraw(c);
+					canvas = mSurfaceHolder.lockCanvas();
+					doDraw(canvas);
 				}
 			} finally {
-				if (c != null) {
-					mSurfaceHolder.unlockCanvasAndPost(c);
+				if (canvas != null) {
+					mSurfaceHolder.unlockCanvasAndPost(canvas);
 				}
 			}
 		}
-//		workingBitmap.recycle();
+		workingBitmap.recycle();
+		workingBitmap = null;
+		workingCanvas = null;
+		pathToDraw = null;
+		pathPaint = null;
 	}
-	
+
 	public void setSurfaceSize(int width, int height, Rect rect) {
 		synchronized (this) {
-			if (workingBitmap == null) {
-				workingBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-			} else {
-				workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, true);
-			}
-			mCanvas = new Canvas();
-			mCanvas.setBitmap(workingBitmap);
+			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, true);
+			workingCanvas.setBitmap(workingBitmap);
 			rectCanvas = rect;
 		}
 	}
@@ -75,7 +76,7 @@ public class PaintThread extends Thread {
 	public void setRunning(boolean b) {
 		keepRunning = b;
 	}
-	
+
 	public void setPath(Path path) {
 		if (!getPathCalled) {
 			Log.e(TAG, "no getPath() prior to setPath()", new IllegalStateException());
@@ -92,13 +93,12 @@ public class PaintThread extends Thread {
 	public void clearCanvas() {
 		synchronized (this) {
 			pathToDraw.rewind();
-			mCanvas.drawColor(Color.BLACK);
+			workingCanvas.drawColor(BGCOLOR);
 		}
 	}
 
 	private void doDraw(Canvas canvas) {
-		//			Log.d(TAG, "doDraw");
-		mCanvas.drawPath(pathToDraw, pathPaint);
+		workingCanvas.drawPath(pathToDraw, pathPaint);
 		canvas.drawBitmap(workingBitmap, rectCanvas, rectCanvas, null);
 	}
 }

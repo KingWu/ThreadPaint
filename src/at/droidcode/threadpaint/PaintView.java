@@ -33,7 +33,7 @@ class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTo
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		Log.w(TAG, "PaintView created");
+		Log.d(TAG, "PaintView created");
 
 		SurfaceHolder holder = getHolder();
 		holder.addCallback(this);
@@ -46,8 +46,9 @@ class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTo
 		return paintThread;
 	}
 
+	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-		Log.d(TAG, "surfaceChanged");
+		Log.w(TAG, "surfaceChanged");
 
 		Rect rect = new Rect();
 		rect.left = getLeft();
@@ -58,15 +59,17 @@ class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTo
 		paintThread.setSurfaceSize(width, height, rect);
 	}
 
+	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		Log.d(TAG, "surfaceCreated");
+		Log.w(TAG, "surfaceCreated");
 		paintThread = new PaintThread(holder);
 		paintThread.setRunning(true);
 		paintThread.start();
 	}
 
+	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		Log.d(TAG, "surfaceDestroyed");
+		Log.w(TAG, "surfaceDestroyed");
 		boolean retry = true;
 		paintThread.setRunning(false);
 		while (retry) {
@@ -99,22 +102,22 @@ class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTo
 			float dy = Math.abs(yTouchCoordinate - previousY);
 
 			switch (event.getAction()) {
-				case MotionEvent.ACTION_DOWN:
-					startPath(xTouchCoordinate, yTouchCoordinate);
-					return true;
-				case MotionEvent.ACTION_MOVE:
+			case MotionEvent.ACTION_DOWN:
+				startPath(xTouchCoordinate, yTouchCoordinate);
+				return true;
+			case MotionEvent.ACTION_MOVE:
+				updatePath(xTouchCoordinate, yTouchCoordinate);
+				previousX = xTouchCoordinate;
+				previousY = yTouchCoordinate;
+				return true;
+			case MotionEvent.ACTION_UP:
+				if (openPath && dx != 0f && dy != 0f) {
 					updatePath(xTouchCoordinate, yTouchCoordinate);
-					previousX = xTouchCoordinate;
-					previousY = yTouchCoordinate;
-					return true;
-				case MotionEvent.ACTION_UP:
-					if (openPath && dx != 0f && dy != 0f) {
-						updatePath(xTouchCoordinate, yTouchCoordinate);
-					}
-					endPath();
-					return true;
-				default:
-					return false;
+				}
+				endPath();
+				return true;
+			default:
+				return false;
 			}
 		}
 	}
