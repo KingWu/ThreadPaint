@@ -123,6 +123,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void colorChanged(int color) {
 		synchronized (lock) {
 			pathPaint.setColor(color);
+
 		}
 	}
 
@@ -130,6 +131,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void strokeChanged(int stroke) {
 		synchronized (lock) {
 			pathPaint.setStrokeWidth(stroke);
+
 		}
 	}
 }

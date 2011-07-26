@@ -37,6 +37,12 @@ public class ThreadPaintActivity extends Activity {
 	}
 
 	@Override
+	public void onPause() {
+		colorPickerDialog = null;
+		super.onPause();
+	}
+
+	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
 		colorPickerDialog = null;
