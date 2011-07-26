@@ -123,7 +123,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void colorChanged(int color) {
 		synchronized (lock) {
 			pathPaint.setColor(color);
-
+			// if (color == Color.TRANSPARENT) {
+			// pathPaint.setAlpha(0);
+			// pathPaint.setXfermode(new
+			// PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+			// }
 		}
 	}
 
