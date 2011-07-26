@@ -22,6 +22,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
+import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
 public class PaintThread extends Thread implements ColorPickerDialog.OnColorChangedListener,
 		ColorPickerDialog.OnStrokeChangedListener {

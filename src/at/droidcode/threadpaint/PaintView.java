@@ -29,7 +29,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 
-class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
+public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 	static final String TAG = "THREADPAINT";
 
 	public static final int BGCOLOR = Color.LTGRAY;

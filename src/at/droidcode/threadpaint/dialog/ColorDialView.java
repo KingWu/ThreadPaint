@@ -19,7 +19,7 @@
  *
  */
 
-package at.droidcode.threadpaint;
+package at.droidcode.threadpaint.dialog;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -33,7 +33,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import at.droidcode.threadpaint.ColorPickerDialog.OnColorChangedListener;
+import at.droidcode.threadpaint.PaintView;
+import at.droidcode.threadpaint.R;
+import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnColorChangedListener;
 
 public class ColorDialView extends View {
 	static final String TAG = "THREADPAINT";

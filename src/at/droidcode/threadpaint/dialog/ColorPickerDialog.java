@@ -19,12 +19,14 @@
  *
  */
 
-package at.droidcode.threadpaint;
+package at.droidcode.threadpaint.dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.widget.SeekBar;
+import at.droidcode.threadpaint.PaintView;
+import at.droidcode.threadpaint.R;
 
 public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
 	static final String TAG = "THREADPAINT";
