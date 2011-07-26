@@ -13,5 +13,13 @@
   See the License for the specific language governing permissions and
   limitations under the License. -->
 <resources>
-    <string name="app_name">ThreadPaint</string>
+	<array name="color_spectrum">
+		<item name="red0">#FFFF0000</item>
+		<item name="orange">#FFFFA500</item>
+		<item name="yellow">#FFFFFF00</item>
+		<item name="green">#FF00FF00</item>
+		<item name="blue">#FF0000FF</item>
+		<item name="violet">#FF7F00FF</item>
+		<item name="red1">#FFFF0000</item>
+	</array>
 </resources>

@@ -22,6 +22,7 @@
 package at.droidcode.threadpaint;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -34,33 +35,43 @@ import android.view.MotionEvent;
 import android.view.View;
 import at.droidcode.threadpaint.ColorPickerDialog.OnColorChangedListener;
 
-public class ColorPickerView extends View {
+public class ColorDialView extends View {
 	static final String TAG = "THREADPAINT";
 
-	private int centerRadius;
-	private static final int CENTER_X = 200;
-	private static final int CENTER_Y = 200;
-	public static final int STD_CENTER_RADIUS = 50;
+	private final int centerX;
+	private final int centerY;
+	private final int stdCenterRadius;
+	private int activeCenterRadius;
 
 	private final Paint mPaint;
 	private final Paint mCenterPaint;
-	private final int[] mColors;
+	private final int[] colorSpectrum;
 	private OnColorChangedListener mListener;
 
-	public ColorPickerView(Context context, AttributeSet attrs) {
+	public ColorDialView(Context context, AttributeSet attrs) {
 		super(context, attrs);
-		centerRadius = STD_CENTER_RADIUS;
-		mColors = new int[] { 0xFFFF0000, 0xFFFF00FF, 0xFF0000FF, 0xFF00FFFF, 0xFF00FF00, 0xFFFFFF00, 0xFFFF0000 };
-		Shader s = new SweepGradient(0, 0, mColors, null);
+
+		final TypedArray colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
+		colorSpectrum = new int[colorArray.length()];
+		for (int i = 0; i < colorArray.length(); i++) {
+			colorSpectrum[i] = colorArray.getColor(i, Color.RED);
+		}
+		colorArray.recycle();
+		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
+
+		centerX = PaintView.dp2px(context, 125);
+		centerY = centerX;
+		stdCenterRadius = (PaintView.maxStrokeWidth() / 2) / 2;
+		activeCenterRadius = stdCenterRadius;
 
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mPaint.setShader(s);
 		mPaint.setStyle(Paint.Style.STROKE);
-		mPaint.setStrokeWidth(64);
+		mPaint.setStrokeWidth(stdCenterRadius);
 
 		mCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mCenterPaint.setColor(Color.BLACK);
-		mCenterPaint.setStrokeWidth(5);
+		mCenterPaint.setStrokeWidth(PaintView.dp2px(context, 5));
 	}
 
 	public void setOnColorChangedListener(OnColorChangedListener l) {
@@ -71,8 +82,8 @@ public class ColorPickerView extends View {
 		mCenterPaint.setColor(color);
 	}
 
-	public void setRadiusMultiplier(int mult) {
-		centerRadius = mult;
+	public void setCenterRadius(int radius) {
+		activeCenterRadius = radius;
 		invalidate();
 	}
 
@@ -81,12 +92,12 @@ public class ColorPickerView extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		float r = CENTER_X - mPaint.getStrokeWidth() * 0.5f;
+		float r = centerX - mPaint.getStrokeWidth() * 0.5f;
 
-		canvas.translate(CENTER_X, CENTER_X);
+		canvas.translate(centerX, centerX);
 
 		canvas.drawOval(new RectF(-r, -r, r, r), mPaint);
-		canvas.drawCircle(0, 0, centerRadius, mCenterPaint);
+		canvas.drawCircle(0, 0, activeCenterRadius, mCenterPaint);
 
 		if (mTrackingCenter) {
 			int c = mCenterPaint.getColor();
@@ -97,7 +108,7 @@ public class ColorPickerView extends View {
 			} else {
 				mCenterPaint.setAlpha(0x80);
 			}
-			canvas.drawCircle(0, 0, centerRadius + mCenterPaint.getStrokeWidth(), mCenterPaint);
+			canvas.drawCircle(0, 0, activeCenterRadius + mCenterPaint.getStrokeWidth(), mCenterPaint);
 
 			mCenterPaint.setStyle(Paint.Style.FILL);
 			mCenterPaint.setColor(c);
@@ -106,7 +117,7 @@ public class ColorPickerView extends View {
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		setMeasuredDimension(CENTER_X * 2, CENTER_Y * 2);
+		setMeasuredDimension(centerX * 2, centerY * 2);
 	}
 
 	private int ave(int s, int d, float p) {
@@ -140,9 +151,9 @@ public class ColorPickerView extends View {
 
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
-		float x = event.getX() - CENTER_X;
-		float y = event.getY() - CENTER_Y;
-		boolean inCenter = java.lang.Math.sqrt(x * x + y * y) <= STD_CENTER_RADIUS;
+		float x = event.getX() - centerX;
+		float y = event.getY() - centerY;
+		boolean inCenter = java.lang.Math.sqrt(x * x + y * y) <= stdCenterRadius;
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -165,7 +176,7 @@ public class ColorPickerView extends View {
 				if (unit < 0) {
 					unit += 1;
 				}
-				mCenterPaint.setColor(interpColor(mColors, unit));
+				mCenterPaint.setColor(interpColor(colorSpectrum, unit));
 				invalidate();
 			}
 			break;

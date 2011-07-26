@@ -21,12 +21,12 @@
 
 package at.droidcode.threadpaint;
 
-import android.app.Dialog;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.widget.SeekBar;
 
-public class ColorPickerDialog extends Dialog implements SeekBar.OnSeekBarChangeListener {
+public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
 	static final String TAG = "THREADPAINT";
 
 	public interface OnColorChangedListener {
@@ -39,21 +39,17 @@ public class ColorPickerDialog extends Dialog implements SeekBar.OnSeekBarChange
 
 	private final OnColorChangedListener colorListener;
 	private final OnStrokeChangedListener strokeListener;
-	private final int mInitialColor;
-	private int seekBarProgress;
 
-	public ColorPickerDialog(Context context, OnColorChangedListener l1, OnStrokeChangedListener l2, int initialColor) {
+	public ColorPickerDialog(Context context, OnColorChangedListener l1, OnStrokeChangedListener l2) {
 		super(context);
-
 		colorListener = l1;
 		strokeListener = l2;
-		mInitialColor = initialColor;
-		seekBarProgress = ColorPickerView.STD_CENTER_RADIUS;
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		OnColorChangedListener l = new OnColorChangedListener() {
 			@Override
 			public void colorChanged(int color) {
@@ -62,37 +58,32 @@ public class ColorPickerDialog extends Dialog implements SeekBar.OnSeekBarChange
 			}
 		};
 
-		setContentView(R.layout.colorpicker);
-		setTitle("Change the Color and Size");
+		setContentView(R.layout.dialog_colorpicker);
 
-		final ColorPickerView colorPickerView = (ColorPickerView) findViewById(R.id.view_colorpicker);
+		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
 		colorPickerView.setOnColorChangedListener(l);
-		colorPickerView.setInitalColor(mInitialColor);
+		colorPickerView.setInitalColor(PaintView.STDCOLOR);
+
 		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_stroke);
 		strokeSeekBar.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		seekBarProgress = progress;
-		final ColorPickerView colorPickerView = (ColorPickerView) findViewById(R.id.view_colorpicker);
-		colorPickerView.setRadiusMultiplier(progress);
-		strokeListener.strokeChanged(progress * 2);
+		final float percent = (float) progress / (float) seekBar.getMax();
+		final int strokeWidth = Math.round(PaintView.maxStrokeWidth() * percent);
+		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
+		colorPickerView.setCenterRadius(strokeWidth / 2);
 	}
 
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
-		seekBarProgress = seekBar.getProgress();
-		final ColorPickerView colorPickerView = (ColorPickerView) findViewById(R.id.view_colorpicker);
-		colorPickerView.setRadiusMultiplier(seekBarProgress);
-		strokeListener.strokeChanged(seekBarProgress * 2);
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
-		seekBarProgress = seekBar.getProgress();
-		final ColorPickerView colorPickerView = (ColorPickerView) findViewById(R.id.view_colorpicker);
-		colorPickerView.setRadiusMultiplier(seekBarProgress);
-		strokeListener.strokeChanged(seekBarProgress * 2);
+		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
+		final int strokeWidth = Math.round(PaintView.maxStrokeWidth() * percent);
+		strokeListener.strokeChanged(strokeWidth);
 	}
 }

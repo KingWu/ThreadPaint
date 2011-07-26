@@ -18,7 +18,6 @@ package at.droidcode.threadpaint;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -27,8 +26,6 @@ import android.view.SurfaceHolder;
 public class PaintThread extends Thread implements ColorPickerDialog.OnColorChangedListener,
 		ColorPickerDialog.OnStrokeChangedListener {
 	static final String TAG = "THREADPAINT";
-	static final int BGCOLOR = Color.LTGRAY;
-	static final int STDCOLOR = Color.RED;
 
 	private final Object lock = new Object();
 
@@ -52,11 +49,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 		pathPaint.setStyle(Paint.Style.STROKE);
 		pathPaint.setAntiAlias(true);
 		pathPaint.setDither(true);
-		pathPaint.setColor(STDCOLOR);
+		pathPaint.setColor(PaintView.STDCOLOR);
 		pathPaint.setStyle(Paint.Style.STROKE);
 		pathPaint.setStrokeJoin(Paint.Join.ROUND);
 		pathPaint.setStrokeCap(Paint.Cap.ROUND);
-		pathPaint.setStrokeWidth(ColorPickerView.STD_CENTER_RADIUS * 2);
+		pathPaint.setStrokeWidth(PaintView.maxStrokeWidth() / 2);
 	}
 
 	@Override
@@ -110,7 +107,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void clearCanvas() {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			workingCanvas.drawColor(BGCOLOR);
+			workingCanvas.drawColor(PaintView.BGCOLOR);
 		}
 	}
 
@@ -135,7 +132,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void strokeChanged(int stroke) {
 		synchronized (lock) {
 			pathPaint.setStrokeWidth(stroke);
-
 		}
 	}
 }

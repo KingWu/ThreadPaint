@@ -32,13 +32,17 @@ public class ThreadPaintActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		setContentView(R.layout.activity_threadpaint);
 		paintView = (PaintView) findViewById(R.id.paint_view);
 	}
 
 	@Override
 	public void onPause() {
-		colorPickerDialog = null;
+		Log.w(TAG, "PaintView paused");
+		if (colorPickerDialog != null) {
+			colorPickerDialog.dismiss();
+			colorPickerDialog = null;
+		}
 		super.onPause();
 	}
 
@@ -73,7 +77,7 @@ public class ThreadPaintActivity extends Activity {
 	private void showColorpicker() {
 		if (colorPickerDialog == null) {
 			final PaintThread thread = paintView.getThread();
-			colorPickerDialog = new ColorPickerDialog(this, thread, thread, PaintThread.STDCOLOR);
+			colorPickerDialog = new ColorPickerDialog(this, thread, thread);
 		}
 		colorPickerDialog.show();
 	}

@@ -17,10 +17,13 @@
 package at.droidcode.threadpaint;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -29,11 +32,28 @@ import android.view.View;
 class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 	static final String TAG = "THREADPAINT";
 
+	public static final int BGCOLOR = Color.LTGRAY;
+	public static final int STDCOLOR = Color.RED;
+	public static final int MAX_STROKE_WIDTH_DP = 150;
+	private static int maxStrokeWidthPx = 150;
+
+	public static int maxStrokeWidth() {
+		return maxStrokeWidthPx;
+	}
+
 	private PaintThread paintThread;
+
+	public static int dp2px(Context c, int dp) {
+		final Resources r = c.getResources();
+		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
+		return Math.round(px);
+	}
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		Log.d(TAG, "PaintView created");
+
+		maxStrokeWidthPx = dp2px(context, MAX_STROKE_WIDTH_DP);
 
 		SurfaceHolder holder = getHolder();
 		holder.addCallback(this);
