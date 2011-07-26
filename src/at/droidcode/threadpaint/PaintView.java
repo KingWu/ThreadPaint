@@ -77,73 +77,62 @@ class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTo
 				paintThread.join();
 				retry = false;
 			} catch (InterruptedException e) {
-				Log.e(TAG, e.toString());
+				Log.e(TAG, "Error: ", e);
 			}
 		}
 		paintThread = null;
 	}
 
-	private float previousX = 0f;
-	private float previousY = 0f;
-	private boolean openPath = false;
+	private float previousX = -1f;
+	private float previousY = -1f;
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		synchronized (paintThread) {
-			float xTouchCoordinate = event.getX();
-			float yTouchCoordinate = event.getY();
+		float xTouchCoordinate = event.getX();
+		float yTouchCoordinate = event.getY();
 
-			if (previousX == 0 && previousY == 0) {
-				previousX = xTouchCoordinate;
-				previousY = yTouchCoordinate;
-			}
+		if (previousX == -1f && previousY == -1f) {
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
+		}
 
-			float dx = Math.abs(xTouchCoordinate - previousX);
-			float dy = Math.abs(yTouchCoordinate - previousY);
-
-			switch (event.getAction()) {
-			case MotionEvent.ACTION_DOWN:
-				startPath(xTouchCoordinate, yTouchCoordinate);
-				return true;
-			case MotionEvent.ACTION_MOVE:
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			startPath(xTouchCoordinate, yTouchCoordinate);
+			return true;
+		case MotionEvent.ACTION_MOVE:
+			updatePath(xTouchCoordinate, yTouchCoordinate);
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
+			return true;
+		case MotionEvent.ACTION_UP:
+			final float dx = Math.abs(xTouchCoordinate - previousX);
+			final float dy = Math.abs(yTouchCoordinate - previousY);
+			if (dx == 0f && dy == 0f) {
+				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
+			} else {
 				updatePath(xTouchCoordinate, yTouchCoordinate);
-				previousX = xTouchCoordinate;
-				previousY = yTouchCoordinate;
-				return true;
-			case MotionEvent.ACTION_UP:
-				if (openPath && dx != 0f && dy != 0f) {
-					updatePath(xTouchCoordinate, yTouchCoordinate);
-				}
-				endPath();
-				return true;
-			default:
-				return false;
 			}
+			previousX = -1f;
+			previousY = -1f;
+			return true;
+		default:
+			return false;
 		}
 	}
 
 	private void startPath(float x, float y) {
-		Log.d(TAG, "startPath x: " + x + " y: " + y);
 		final Path path = paintThread.getPath();
 		path.rewind();
 		path.moveTo(x, y);
-		paintThread.setPath(path);
+		Log.d(TAG, "start path x: " + x + " y: " + y);
 	}
 
 	private void updatePath(float x2, float y2) {
-		openPath = true;
-		float x1 = (previousX + x2) / 2;
-		float y1 = (previousY + y2) / 2;
-		Log.d(TAG, "updatePath x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
+		final float x1 = (previousX + x2) / 2;
+		final float y1 = (previousY + y2) / 2;
 		final Path path = paintThread.getPath();
 		path.quadTo(x1, y1, x2, y2);
-		paintThread.setPath(path);
-	}
-
-	private void endPath() {
-		Log.d(TAG, "endPath");
-		previousX = 0f;
-		previousY = 0f;
-		openPath = false;
+		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
 	}
 }

@@ -22,20 +22,25 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import at.ist.tugraz.threadpaint.R;
 
 public class ThreadPaintActivity extends Activity {
 	static final String TAG = "THREADPAINT";
 
 	private PaintView paintView;
+	private ColorPickerDialog colorPickerDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setContentView(R.layout.main);
-
 		paintView = (PaintView) findViewById(R.id.paint_view);
+	}
+
+	@Override
+	public void onDestroy() {
+		Log.w(TAG, "PaintView destroyed");
+		colorPickerDialog = null;
+		super.onDestroy();
 	}
 
 	@Override
@@ -48,17 +53,22 @@ public class ThreadPaintActivity extends Activity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-			case R.id.clear:
-				paintView.getThread().clearCanvas();
-				return true;
-			default:
-				return super.onOptionsItemSelected(item);
+		case R.id.menu_color:
+			showColorpicker();
+			return true;
+		case R.id.menu_clear:
+			paintView.getThread().clearCanvas();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 	}
-	
-	@Override
-	public void onDestroy(){
-		Log.w(TAG,"PaintView destroyed");
-		super.onDestroy();
+
+	private void showColorpicker() {
+		if (colorPickerDialog == null) {
+			final PaintThread thread = paintView.getThread();
+			colorPickerDialog = new ColorPickerDialog(this, thread, thread, PaintThread.STDCOLOR);
+		}
+		colorPickerDialog.show();
 	}
 }

@@ -12,13 +12,21 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License. -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent">
+  
+  <at.droidcode.threadpaint.ColorPickerView 
+    android:id="@+id/view_colorpicker"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent">
+    android:layout_height="fill_parent"/>
+  <SeekBar
+  android:id="@+id/seekbar_stroke"
+  android:layout_width="fill_parent"
+  android:layout_height="wrap_content"
+  android:max="100"
+  android:progress="50"/>
     
-	<at.droidcode.threadpaint.PaintView
-    	android:id="@+id/paint_view"
-    	android:layout_width="fill_parent"
-    	android:layout_height="fill_parent"/>
-    
-</FrameLayout>
+</LinearLayout>
