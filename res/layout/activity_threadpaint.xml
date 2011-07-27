@@ -16,7 +16,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
     
-	<at.droidcode.threadpaint.PaintView
+	<at.droidcode.threadpaint.ui.PaintView
     	android:id="@+id/paint_view"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"/>
