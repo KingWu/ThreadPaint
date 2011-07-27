@@ -25,8 +25,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.widget.SeekBar;
-import at.droidcode.threadpaint.PaintView;
 import at.droidcode.threadpaint.R;
+import at.droidcode.threadpaint.ThreadPaintApp;
 
 public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
 	static final String TAG = "THREADPAINT";
@@ -41,11 +41,13 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 
 	private final OnColorChangedListener colorListener;
 	private final OnStrokeChangedListener strokeListener;
+	private final int maxStrokeWidth;
 
 	public ColorPickerDialog(Context context, OnColorChangedListener l1, OnStrokeChangedListener l2) {
 		super(context);
 		colorListener = l1;
 		strokeListener = l2;
+		maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
 	}
 
 	@Override
@@ -64,7 +66,8 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 
 		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
 		colorPickerView.setOnColorChangedListener(l);
-		colorPickerView.setInitalColor(PaintView.STDCOLOR);
+		final int color = getContext().getResources().getColor(R.color.stroke_standard);
+		colorPickerView.setInitalColor(color);
 
 		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_stroke);
 		strokeSeekBar.setOnSeekBarChangeListener(this);
@@ -73,7 +76,7 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 		final float percent = (float) progress / (float) seekBar.getMax();
-		final int strokeWidth = Math.round(PaintView.maxStrokeWidth() * percent);
+		final int strokeWidth = Math.round(maxStrokeWidth * percent);
 		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
 		colorPickerView.setCenterRadius(strokeWidth / 2);
 	}
@@ -85,7 +88,7 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
-		final int strokeWidth = Math.round(PaintView.maxStrokeWidth() * percent);
+		final int strokeWidth = Math.round(maxStrokeWidth * percent);
 		strokeListener.strokeChanged(strokeWidth);
 	}
 }

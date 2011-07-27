@@ -23,6 +23,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
+import at.droidcode.threadpaint.ui.PaintThread;
+import at.droidcode.threadpaint.ui.PaintView;
 
 public class ThreadPaintActivity extends Activity {
 	static final String TAG = "THREADPAINT";

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package at.droidcode.threadpaint;
+package at.droidcode.threadpaint.ui;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,6 +22,9 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import at.droidcode.threadpaint.R;
+import at.droidcode.threadpaint.ThreadPaintApp;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
 public class PaintThread extends Thread implements ColorPickerDialog.OnColorChangedListener,
@@ -37,24 +40,28 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	private Path pathToDraw;
 	private Paint pathPaint;
 	private Rect rectCanvas;
+	private final int backgroundColor;
 
 	private final SurfaceHolder mSurfaceHolder;
 
-	public PaintThread(SurfaceHolder surfaceHolder) {
-		mSurfaceHolder = surfaceHolder;
+	public PaintThread(SurfaceView view) {
+		mSurfaceHolder = view.getHolder();
 		workingBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		workingCanvas = new Canvas();
 		pathToDraw = new Path();
+		final ThreadPaintApp appContext = (ThreadPaintApp) view.getContext().getApplicationContext();
+		backgroundColor = appContext.getResources().getColor(R.color.canvas_background);
 
 		pathPaint = new Paint();
 		pathPaint.setStyle(Paint.Style.STROKE);
 		pathPaint.setAntiAlias(true);
 		pathPaint.setDither(true);
-		pathPaint.setColor(PaintView.STDCOLOR);
+		final int color = appContext.getResources().getColor(R.color.stroke_standard);
+		pathPaint.setColor(color);
 		pathPaint.setStyle(Paint.Style.STROKE);
 		pathPaint.setStrokeJoin(Paint.Join.ROUND);
 		pathPaint.setStrokeCap(Paint.Cap.ROUND);
-		pathPaint.setStrokeWidth(PaintView.maxStrokeWidth() / 2);
+		pathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
 	}
 
 	@Override
@@ -108,7 +115,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void clearCanvas() {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			workingCanvas.drawColor(PaintView.BGCOLOR);
+			workingCanvas.drawColor(backgroundColor);
 		}
 	}
 
@@ -121,11 +128,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	public void colorChanged(int color) {
 		synchronized (lock) {
 			pathPaint.setColor(color);
-			// if (color == Color.TRANSPARENT) {
-			// pathPaint.setAlpha(0);
-			// pathPaint.setXfermode(new
-			// PorterDuffXfermode(PorterDuff.Mode.DST_IN));
-			// }
 		}
 	}
 

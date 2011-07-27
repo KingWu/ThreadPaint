@@ -13,5 +13,6 @@
   See the License for the specific language governing permissions and
   limitations under the License. -->
 <resources>
-    <color name="transparent_grey">#BB333333</color>
+    <color name="canvas_background">#FFCCCCCC</color>
+    <color name="stroke_standard">#FFFF0000</color>
 </resources>
