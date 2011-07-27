@@ -33,9 +33,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import at.droidcode.threadpaint.Utils;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
+import at.droidcode.threadpaint.Utils;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnColorChangedListener;
 
 public class ColorDialView extends View {
@@ -62,9 +62,10 @@ public class ColorDialView extends View {
 		colorArray.recycle();
 		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
 
-		centerX = Utils.dp2px(context, 125);
-		centerY = centerX;
 		final int maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
+
+		centerX = maxStrokeWidth - (maxStrokeWidth / 6);
+		centerY = centerX;
 		stdCenterRadius = (maxStrokeWidth / 2) / 2;
 		activeCenterRadius = stdCenterRadius;
 
