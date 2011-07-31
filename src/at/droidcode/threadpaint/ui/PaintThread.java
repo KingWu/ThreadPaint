@@ -99,6 +99,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 		keepRunning = b;
 	}
 
+	public Bitmap getBitmap() {
+		synchronized (lock) {
+			return workingBitmap;
+		}
+	}
+
 	public Path getPath() {
 		synchronized (lock) {
 			return pathToDraw;
