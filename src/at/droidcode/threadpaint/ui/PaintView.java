@@ -16,6 +16,7 @@
 
 package at.droidcode.threadpaint.ui;
 
+import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 import android.content.Context;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -25,10 +26,13 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
+/**
+ * View that holds the surface onto which a user can draw. Has an OnTouchListener to turn user input into paths and
+ * points on a canvas.
+ */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
-	static final String TAG = "THREADPAINT";
-
 	private PaintThread paintThread;
 
 	public PaintView(Context context, AttributeSet attrs) {
@@ -40,10 +44,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 		setFocusable(true);
 		setOnTouchListener(this);
-	}
-
-	public PaintThread getThread() {
-		return paintThread;
 	}
 
 	@Override
@@ -81,6 +81,20 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			}
 		}
 		paintThread = null;
+	}
+
+	/**
+	 * @return OnPaintChangedListener, usually the PaintThread.
+	 */
+	public OnPaintChangedListener getOnPaintChangedListener() {
+		return paintThread;
+	}
+
+	/**
+	 * Fills the whole Canvas with the current background color.
+	 */
+	public void fillWithBackgroundColor() {
+		paintThread.fillBackground();
 	}
 
 	private float previousX = -1f;
@@ -121,6 +135,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		}
 	}
 
+	/**
+	 * Begin a new path at the specified coordinates on the Bitmap.
+	 * 
+	 * @param x X-Coordinate on the Bitmap.
+	 * @param y Y-Coordinate on the Bitmap.
+	 */
 	private void startPath(float x, float y) {
 		final Path path = paintThread.getPath();
 		path.rewind();
@@ -128,6 +148,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		Log.d(TAG, "start path x: " + x + " y: " + y);
 	}
 
+	/**
+	 * Continue a started path to the specified coordinates on the Bitmap.
+	 * 
+	 * @param x2 X-Coordinate on the Bitmap.
+	 * @param y2 Y-Coordinate on the Bitmap.
+	 */
 	private void updatePath(float x2, float y2) {
 		final float x1 = (previousX + x2) / 2;
 		final float y1 = (previousY + y2) / 2;

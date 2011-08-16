@@ -16,6 +16,7 @@
 
 package at.droidcode.threadpaint;
 
+import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -23,12 +24,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
-import at.droidcode.threadpaint.ui.PaintThread;
+import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
+/**
+ * This Activity houses a single PaintView. It handles dialogs and provides an
+ * options menu.
+ */
 public class ThreadPaintActivity extends Activity {
-	static final String TAG = "THREADPAINT";
-
 	private PaintView paintView;
 	private ColorPickerDialog colorPickerDialog;
 
@@ -70,17 +73,20 @@ public class ThreadPaintActivity extends Activity {
 			showColorpicker();
 			return true;
 		case R.id.menu_clear:
-			paintView.getThread().clearCanvas();
+			paintView.fillWithBackgroundColor();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
 	}
 
+	/**
+	 * Instantiates a new ColorPickerDialog if necessary and shows it.
+	 */
 	private void showColorpicker() {
 		if (colorPickerDialog == null) {
-			final PaintThread thread = paintView.getThread();
-			colorPickerDialog = new ColorPickerDialog(this, thread, thread);
+			final OnPaintChangedListener l = paintView.getOnPaintChangedListener();
+			colorPickerDialog = new ColorPickerDialog(this, l);
 		}
 		colorPickerDialog.show();
 	}

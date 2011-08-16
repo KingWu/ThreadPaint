@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * This file incorporates work covered by the same license and the following copyright:
+ * This file incorporates work covered by the following copyright:
  * 
  *     Copyright (C) 2007 The Android Open Source Project
  *
@@ -21,6 +21,7 @@
 
 package at.droidcode.threadpaint.dialog;
 
+import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -36,11 +37,12 @@ import android.view.View;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
 import at.droidcode.threadpaint.Utils;
-import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnColorChangedListener;
+import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
+/**
+ * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source Project.
+ */
 public class ColorDialView extends View {
-	static final String TAG = "THREADPAINT";
-
 	private final int centerX;
 	private final int centerY;
 	private final int stdCenterRadius;
@@ -49,7 +51,7 @@ public class ColorDialView extends View {
 	private final Paint mPaint;
 	private final Paint mCenterPaint;
 	private final int[] colorSpectrum;
-	private OnColorChangedListener mListener;
+	private OnPaintChangedListener paintListener;
 
 	public ColorDialView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -79,15 +81,24 @@ public class ColorDialView extends View {
 		mCenterPaint.setStrokeWidth(Utils.dp2px(context, 5));
 	}
 
-	public void setOnColorChangedListener(OnColorChangedListener l) {
-		mListener = l;
+	/**
+	 * @param l OnPaintChangedListener to be called when the color or stroke width changes.
+	 */
+	void setOnPaintChangedListener(OnPaintChangedListener l) {
+		paintListener = l;
 	}
 
-	public void setInitalColor(int color) {
+	/**
+	 * @param color Color to be active when the dial is shown for the first time.
+	 */
+	void setInitalColor(int color) {
 		mCenterPaint.setColor(color);
 	}
 
-	public void setCenterRadius(int radius) {
+	/**
+	 * @param radius Radius of the central circle, representing the stroke width.
+	 */
+	void setCenterRadius(int radius) {
 		activeCenterRadius = radius;
 		invalidate();
 	}
@@ -188,10 +199,10 @@ public class ColorDialView extends View {
 		case MotionEvent.ACTION_UP:
 			if (mTrackingCenter) {
 				if (inCenter) {
-					if (mListener == null) {
-						Log.e(TAG, "Error: No onColorChanged listener set!");
+					if (paintListener == null) {
+						Log.e(TAG, "Error: No OnPaintChangedListener listener set!");
 					} else {
-						mListener.colorChanged(mCenterPaint.getColor());
+						paintListener.colorChanged(mCenterPaint.getColor());
 					}
 				}
 				mTrackingCenter = false; // so we draw w/o halo

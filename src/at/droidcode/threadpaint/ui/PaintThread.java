@@ -27,28 +27,32 @@ import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
-public class PaintThread extends Thread implements ColorPickerDialog.OnColorChangedListener,
-		ColorPickerDialog.OnStrokeChangedListener {
-	static final String TAG = "THREADPAINT";
-
+/**
+ * Continually draws a Path onto a Canvas which in turn is being drawn onto a SurfaceView.
+ */
+public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener {
 	private final Object lock = new Object();
 
-	private boolean keepRunning = false;
+	private volatile boolean keepRunning;
 
+	private volatile Path pathToDraw;
 	private Bitmap workingBitmap;
 	private Canvas workingCanvas;
-	private Path pathToDraw;
+	private final Rect rectSurface;
+	private int backgroundColor;
 	private Paint pathPaint;
-	private Rect rectCanvas;
-	private final int backgroundColor;
 
-	private final SurfaceHolder mSurfaceHolder;
+	private final SurfaceHolder surfaceHolder;
 
 	public PaintThread(SurfaceView view) {
-		mSurfaceHolder = view.getHolder();
+		surfaceHolder = view.getHolder();
+
+		keepRunning = false;
+		pathToDraw = new Path();
 		workingBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		workingCanvas = new Canvas();
-		pathToDraw = new Path();
+		rectSurface = new Rect();
+
 		final ThreadPaintApp appContext = (ThreadPaintApp) view.getContext().getApplicationContext();
 		backgroundColor = appContext.getResources().getColor(R.color.canvas_background);
 
@@ -66,17 +70,17 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 
 	@Override
 	public void run() {
-		clearCanvas();
+		fillBackground();
 		while (keepRunning) {
 			Canvas canvas = null;
 			try {
 				synchronized (lock) {
-					canvas = mSurfaceHolder.lockCanvas();
+					canvas = surfaceHolder.lockCanvas();
 					doDraw(canvas);
 				}
 			} finally {
 				if (canvas != null) {
-					mSurfaceHolder.unlockCanvasAndPost(canvas);
+					surfaceHolder.unlockCanvasAndPost(canvas);
 				}
 			}
 		}
@@ -87,47 +91,14 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 		pathPaint = null;
 	}
 
-	public void setSurfaceSize(int width, int height, Rect rect) {
-		synchronized (lock) {
-			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, true);
-			workingCanvas.setBitmap(workingBitmap);
-			rectCanvas = rect;
-		}
-	}
-
-	public void setRunning(boolean b) {
-		keepRunning = b;
-	}
-
-	public Bitmap getBitmap() {
-		synchronized (lock) {
-			return workingBitmap;
-		}
-	}
-
-	public Path getPath() {
-		synchronized (lock) {
-			return pathToDraw;
-		}
-	}
-
-	public void drawPoint(float x, float y) {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			workingCanvas.drawPoint(x, y, pathPaint);
-		}
-	}
-
-	public void clearCanvas() {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			workingCanvas.drawColor(backgroundColor);
-		}
-	}
-
+	/**
+	 * Draws the path onto a canvas which is then drawn onto the canvas of the SurfaceView.
+	 * 
+	 * @param canvas The Canvas onto which the Bitmap is drawn.
+	 */
 	private void doDraw(Canvas canvas) {
 		workingCanvas.drawPath(pathToDraw, pathPaint);
-		canvas.drawBitmap(workingBitmap, rectCanvas, rectCanvas, null);
+		canvas.drawBitmap(workingBitmap, rectSurface, rectSurface, null);
 	}
 
 	@Override
@@ -138,9 +109,85 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnColorChan
 	}
 
 	@Override
-	public void strokeChanged(int stroke) {
+	public void strokeChanged(int width) {
 		synchronized (lock) {
-			pathPaint.setStrokeWidth(stroke);
+			pathPaint.setStrokeWidth(width);
+		}
+	}
+
+	/**
+	 * Called by the SurfaceView when its dimensions change.
+	 * 
+	 * @param width Width of the SurfaceView.
+	 * @param height Height of the SurfaceView.
+	 * @param rect Rect of the SurfaceView.
+	 */
+	void setSurfaceSize(int width, int height, Rect rect) {
+		synchronized (lock) {
+			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, true);
+			workingCanvas.setBitmap(workingBitmap);
+			rectSurface.set(rect);
+		}
+	}
+
+	/**
+	 * @param b true to keep running, false to terminate
+	 */
+	void setRunning(boolean b) {
+		keepRunning = b;
+	}
+
+	/**
+	 * @return Bitmap the thread draws onto the surface.
+	 */
+	Bitmap getBitmap() {
+		synchronized (lock) {
+			return workingBitmap;
+		}
+	}
+
+	/**
+	 * @return Path the thread draws onto the Canvas (Bitmap).
+	 */
+	Path getPath() {
+		synchronized (lock) {
+			return pathToDraw;
+		}
+	}
+
+	/**
+	 * Draws a point at the specified coordinates on the Bitmap.
+	 * 
+	 * @param x X-Coordinate of the point
+	 * @param y Y-Coordinate of the point
+	 */
+	void drawPoint(float x, float y) {
+		synchronized (lock) {
+			pathToDraw.rewind();
+			workingCanvas.drawPoint(x, y, pathPaint);
+		}
+	}
+
+	/**
+	 * Draw the current background color over the whole Canvas (Bitmap).
+	 */
+	void fillBackground() {
+		synchronized (lock) {
+			pathToDraw.rewind();
+			workingCanvas.drawColor(backgroundColor);
+		}
+	}
+
+	/**
+	 * Change the current background color and draw it over the whole Canvas (Bitmap).
+	 * 
+	 * @param color Color to set as the new background color
+	 */
+	void fillBackground(int color) {
+		synchronized (lock) {
+			backgroundColor = color;
+			pathToDraw.rewind();
+			workingCanvas.drawColor(backgroundColor);
 		}
 	}
 }

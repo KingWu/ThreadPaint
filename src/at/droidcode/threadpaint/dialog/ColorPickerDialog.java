@@ -12,11 +12,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
- * This file incorporates work covered by the same license and the following copyright:
- * 
- *     Copyright (C) 2007 The Android Open Source Project
- *
  */
 
 package at.droidcode.threadpaint.dialog;
@@ -28,25 +23,24 @@ import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
 
+/**
+ * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the width of the
+ * brush's stroke.
+ */
 public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
-	static final String TAG = "THREADPAINT";
 
-	public interface OnColorChangedListener {
+	public interface OnPaintChangedListener {
 		void colorChanged(int color);
+
+		void strokeChanged(int width);
 	}
 
-	public interface OnStrokeChangedListener {
-		void strokeChanged(int stroke);
-	}
-
-	private final OnColorChangedListener colorListener;
-	private final OnStrokeChangedListener strokeListener;
+	private final OnPaintChangedListener paintListener;
 	private final int maxStrokeWidth;
 
-	public ColorPickerDialog(Context context, OnColorChangedListener l1, OnStrokeChangedListener l2) {
+	public ColorPickerDialog(Context context, OnPaintChangedListener l) {
 		super(context);
-		colorListener = l1;
-		strokeListener = l2;
+		paintListener = l;
 		maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
 	}
 
@@ -54,18 +48,23 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		OnColorChangedListener l = new OnColorChangedListener() {
+		OnPaintChangedListener l = new OnPaintChangedListener() {
 			@Override
 			public void colorChanged(int color) {
-				colorListener.colorChanged(color);
+				paintListener.colorChanged(color);
 				dismiss();
+			}
+
+			@Override
+			public void strokeChanged(int width) {
+				paintListener.strokeChanged(width);
 			}
 		};
 
 		setContentView(R.layout.dialog_colorpicker);
 
 		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
-		colorPickerView.setOnColorChangedListener(l);
+		colorPickerView.setOnPaintChangedListener(l);
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
 		colorPickerView.setInitalColor(color);
 
@@ -89,6 +88,6 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
 		final int strokeWidth = Math.round(maxStrokeWidth * percent);
-		strokeListener.strokeChanged(strokeWidth);
+		paintListener.strokeChanged(strokeWidth);
 	}
 }
