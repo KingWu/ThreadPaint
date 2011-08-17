@@ -12,9 +12,12 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License. -->
-<resources>
-    <string name="app_name">ThreadPaint</string>
-    <string name="menu_color">Color</string>
-    <string name="menu_clear">Clear</string>
-    <string name="menu_prefs">Settings</string>
-</resources>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="User Settings">
+        <CheckBoxPreference android:key="lockorientation"
+        android:defaultValue="true"
+        android:title="Lock Orientation"
+        android:summary="Use portrait layout at all times"/>
+    </PreferenceCategory>
+</PreferenceScreen>

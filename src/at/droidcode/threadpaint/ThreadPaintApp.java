@@ -17,12 +17,12 @@
 package at.droidcode.threadpaint;
 
 import android.app.Application;
+import android.provider.Settings;
 import android.view.Display;
 import android.view.WindowManager;
 
 /**
- * This class is used to provide application global variables that need to be
- * initialized on startup.
+ * This class is used to provide application global variables that need to be initialized on startup.
  */
 public class ThreadPaintApp extends Application {
 	public static final String TAG = "THREADPAINT";
@@ -45,10 +45,13 @@ public class ThreadPaintApp extends Application {
 	}
 
 	/**
-	 * @return the maximum width of the brush stroke in pixels, depending on the
-	 *         hardware's pixel density.
+	 * @return the maximum width of the brush stroke in pixels, depending on the hardware's pixel density.
 	 */
 	public int maxStrokeWidth() {
 		return maxStrokeWidthPx;
+	}
+
+	public void lockScreenOrientation(boolean lock) {
+		Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, lock ? 0 : 1);
 	}
 }

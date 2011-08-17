@@ -23,7 +23,10 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,16 +49,28 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
+	private SharedPreferences preferences;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		setContentView(R.layout.activity_threadpaint);
+
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
+
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
+
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		boolean lock = preferences.getBoolean("lockorientation", true);
+		((ThreadPaintApp) getApplicationContext()).lockScreenOrientation(lock);
 	}
 
 	@Override
@@ -81,6 +96,10 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 			return true;
 		case R.id.menu_clear:
 			paintView.fillWithBackgroundColor();
+			return true;
+		case R.id.menu_prefs:
+			Intent i = new Intent(this, ThreadPaintPreferences.class);
+			startActivity(i);
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
