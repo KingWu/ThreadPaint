@@ -19,18 +19,21 @@ package at.droidcode.threadpaint.ui;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.Cap;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
+import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
 /**
  * Continually draws a Path onto a Canvas which in turn is being drawn onto a SurfaceView.
  */
-public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener {
+public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener,
+		BrushPickerDialog.OnBrushChangedListener {
 	private final Object lock = new Object();
 
 	private volatile boolean keepRunning;
@@ -112,6 +115,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	public void strokeChanged(int width) {
 		synchronized (lock) {
 			pathPaint.setStrokeWidth(width);
+		}
+	}
+
+	@Override
+	public void capChanged(Cap cap) {
+		synchronized (lock) {
+			pathPaint.setStrokeCap(cap);
 		}
 	}
 

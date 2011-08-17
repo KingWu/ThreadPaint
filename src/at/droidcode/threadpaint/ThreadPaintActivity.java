@@ -33,6 +33,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
+import at.droidcode.threadpaint.dialog.BrushPickerDialog.OnBrushChangedListener;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 import at.droidcode.threadpaint.ui.PaintView;
@@ -151,7 +152,8 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	 */
 	private void showBrushPickerDialog() {
 		if (brushPickerDialog == null) {
-			brushPickerDialog = new BrushPickerDialog(this);
+			final OnBrushChangedListener l = paintView.getOnBrushChangedListener();
+			brushPickerDialog = new BrushPickerDialog(this, l);
 		}
 		brushPickerDialog.show();
 	}

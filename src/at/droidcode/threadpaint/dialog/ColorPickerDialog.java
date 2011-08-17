@@ -63,10 +63,11 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 
 		setContentView(R.layout.dialog_colorpicker);
 
-		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colorpicker);
-		colorPickerView.setOnPaintChangedListener(l);
+		final ColorDialView colorDialView = (ColorDialView) findViewById(R.id.view_colorpicker);
+		colorDialView.setOnPaintChangedListener(l);
+
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
-		colorPickerView.setInitalColor(color);
+		colorDialView.setInitalColor(color);
 
 		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_stroke);
 		strokeSeekBar.setOnSeekBarChangeListener(this);

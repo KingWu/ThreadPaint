@@ -27,6 +27,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
+import at.droidcode.threadpaint.dialog.BrushPickerDialog.OnBrushChangedListener;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
 /**
@@ -93,6 +94,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * @return OnPaintChangedListener, usually the PaintThread.
 	 */
 	public OnPaintChangedListener getOnPaintChangedListener() {
+		return paintThread;
+	}
+
+	/**
+	 * @return OnBrushChangedListener, usually the PaintThread.
+	 */
+	public OnBrushChangedListener getOnBrushChangedListener() {
 		return paintThread;
 	}
 
