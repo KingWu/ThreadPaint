@@ -32,6 +32,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
+import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 import at.droidcode.threadpaint.ui.PaintView;
@@ -43,6 +44,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
+	private BrushPickerDialog brushPickerDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -83,7 +85,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_color:
-			showColorpickerDialog();
+			showColorPickerDialog();
 			return true;
 		case R.id.menu_clear:
 			paintView.fillWithBackgroundColor();
@@ -96,10 +98,10 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	public void onToolButtonClicked(View button) {
 		switch (button.getId()) {
 		case R.id.btn_color_picker:
-			showColorpickerDialog();
+			showColorPickerDialog();
 			break;
 		case R.id.btn_brush_cap_picker:
-			fadeOutToolButtons();
+			showBrushPickerDialog();
 			break;
 		default:
 		}
@@ -136,11 +138,21 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	/**
 	 * Instantiates a new ColorPickerDialog if necessary and shows it.
 	 */
-	private void showColorpickerDialog() {
+	private void showColorPickerDialog() {
 		if (colorPickerDialog == null) {
 			final OnPaintChangedListener l = paintView.getOnPaintChangedListener();
 			colorPickerDialog = new ColorPickerDialog(this, l);
 		}
 		colorPickerDialog.show();
+	}
+
+	/**
+	 * Instantiates a new BrushPickerDialog if necessary and shows it.
+	 */
+	private void showBrushPickerDialog() {
+		if (brushPickerDialog == null) {
+			brushPickerDialog = new BrushPickerDialog(this);
+		}
+		brushPickerDialog.show();
 	}
 }
