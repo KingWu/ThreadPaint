@@ -26,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
 /**
@@ -34,6 +35,7 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 	private PaintThread paintThread;
+	private ToolButtonAnimator toolButtonAnimator;
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -83,6 +85,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		paintThread = null;
 	}
 
+	public void setToolButtonAnimator(ToolButtonAnimator animator) {
+		toolButtonAnimator = animator;
+	}
+
 	/**
 	 * @return OnPaintChangedListener, usually the PaintThread.
 	 */
@@ -127,6 +133,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			} else {
 				updatePath(xTouchCoordinate, yTouchCoordinate);
 			}
+			finishPath();
 			previousX = -1f;
 			previousY = -1f;
 			return true;
@@ -145,6 +152,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		final Path path = paintThread.getPath();
 		path.rewind();
 		path.moveTo(x, y);
+		toolButtonAnimator.fadeOutToolButtons();
 		Log.d(TAG, "start path x: " + x + " y: " + y);
 	}
 
@@ -160,5 +168,13 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		final Path path = paintThread.getPath();
 		path.quadTo(x1, y1, x2, y2);
 		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
+	}
+
+	/**
+	 * Things to do when a path is complete.
+	 */
+	private void finishPath() {
+		toolButtonAnimator.fadeInToolButtons();
+		Log.d(TAG, "finish path");
 	}
 }

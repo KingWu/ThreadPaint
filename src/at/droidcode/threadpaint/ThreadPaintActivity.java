@@ -17,29 +17,42 @@
 package at.droidcode.threadpaint;
 
 import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
- * This Activity houses a single PaintView. It handles dialogs and provides an
- * options menu.
+ * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity {
+public class ThreadPaintActivity extends Activity implements ToolButtonAnimator {
 	private PaintView paintView;
+	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		setContentView(R.layout.activity_threadpaint);
-		paintView = (PaintView) findViewById(R.id.paint_view);
+		paintView = (PaintView) findViewById(R.id.view_paint_view);
+		paintView.setToolButtonAnimator(this);
+		toolButtons = new ArrayList<View>();
+		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
 	}
 
 	@Override
@@ -70,7 +83,7 @@ public class ThreadPaintActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_color:
-			showColorpicker();
+			showColorpickerDialog();
 			return true;
 		case R.id.menu_clear:
 			paintView.fillWithBackgroundColor();
@@ -80,10 +93,50 @@ public class ThreadPaintActivity extends Activity {
 		}
 	}
 
+	public void onToolButtonClicked(View button) {
+		switch (button.getId()) {
+		case R.id.btn_color_picker:
+			showColorpickerDialog();
+			break;
+		case R.id.btn_brush_cap_picker:
+			fadeOutToolButtons();
+			break;
+		default:
+		}
+	}
+
+	@Override
+	public void fadeOutToolButtons() {
+		Animation fadeOut = AnimationUtils.loadAnimation(this, R.anim.alpha_out);
+		animateViews(toolButtons, fadeOut);
+	}
+
+	@Override
+	public void fadeInToolButtons() {
+		Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.alpha_in);
+		animateViews(toolButtons, fadeIn);
+	}
+
+	/**
+	 * Animate all the views with the speciefied animation.
+	 * 
+	 * @param views Views to animate
+	 * @param a Animation to use
+	 */
+	private void animateViews(ArrayList<View> views, Animation a) {
+		Iterator<View> iterator = views.iterator();
+		while (iterator.hasNext()) {
+			final View view = iterator.next();
+			a.reset();
+			view.clearAnimation();
+			view.startAnimation(a);
+		}
+	}
+
 	/**
 	 * Instantiates a new ColorPickerDialog if necessary and shows it.
 	 */
-	private void showColorpicker() {
+	private void showColorpickerDialog() {
 		if (colorPickerDialog == null) {
 			final OnPaintChangedListener l = paintView.getOnPaintChangedListener();
 			colorPickerDialog = new ColorPickerDialog(this, l);

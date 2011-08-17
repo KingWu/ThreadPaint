@@ -12,13 +12,23 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License. -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-    
+     
 	<at.droidcode.threadpaint.ui.PaintView
-    	android:id="@+id/paint_view"
+    	android:id="@+id/view_paint_view"
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"/>
-    
-</FrameLayout>
+    	
+    <Button android:id="@+id/btn_color_picker"
+    	style="@style/ToolButton"
+    	android:layout_alignParentTop="true"
+    	android:text="color" />
+    	
+    <Button android:id="@+id/btn_brush_cap_picker"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_color_picker"
+    	android:text=" cap " />
+    	
+</RelativeLayout>
