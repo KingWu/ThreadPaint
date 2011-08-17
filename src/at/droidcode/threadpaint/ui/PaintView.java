@@ -101,16 +101,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		paintThread = null;
 	}
 
+	/**
+	 * @param animator Object that animates the tool buttons
+	 */
 	public void setToolButtonAnimator(ToolButtonAnimator animator) {
 		toolButtonAnimator = animator;
 	}
 
+	/**
+	 * @param f Distance a user must drag her finger to create a path
+	 */
 	public void setMoveThreshold(float f) {
 		moveThreshold = f;
 	}
 
 	/**
-	 * @return Observable associated with this View.
+	 * @return Observable associated with this View
 	 */
 	public Observable getObservable() {
 		return observable;
