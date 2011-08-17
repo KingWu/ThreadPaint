@@ -27,6 +27,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Paint.Cap;
 import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.SweepGradient;
@@ -47,6 +48,9 @@ public class ColorDialView extends View {
 	private final int centerY;
 	private final int stdCenterRadius;
 	private int activeCenterRadius;
+	private Cap centerShape;
+	private final RectF ovalRect;
+	private final RectF squareRect;
 
 	private final Paint mPaint;
 	private final Paint mCenterPaint;
@@ -69,6 +73,7 @@ public class ColorDialView extends View {
 		centerY = centerX;
 		stdCenterRadius = (maxStrokeWidth / 2) / 2;
 		activeCenterRadius = stdCenterRadius;
+		centerShape = Cap.ROUND;
 
 		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -79,6 +84,9 @@ public class ColorDialView extends View {
 		mCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mCenterPaint.setColor(Color.BLACK);
 		mCenterPaint.setStrokeWidth(Utils.dp2px(context, 5));
+
+		ovalRect = new RectF();
+		squareRect = new RectF();
 	}
 
 	/**
@@ -103,17 +111,27 @@ public class ColorDialView extends View {
 		invalidate();
 	}
 
+	void setCenterShape(Cap cap) {
+		centerShape = cap;
+	}
+
 	private boolean mTrackingCenter;
 	private boolean mHighlightCenter;
 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		float r = centerX - mPaint.getStrokeWidth() * 0.5f;
-
 		canvas.translate(centerX, centerX);
 
-		canvas.drawOval(new RectF(-r, -r, r, r), mPaint);
-		canvas.drawCircle(0, 0, activeCenterRadius, mCenterPaint);
+		ovalRect.set(-r, -r, r, r);
+		canvas.drawOval(ovalRect, mPaint);
+
+		if (centerShape == Cap.ROUND) {
+			canvas.drawCircle(0, 0, activeCenterRadius, mCenterPaint);
+		} else {
+			squareRect.set(-activeCenterRadius, -activeCenterRadius, activeCenterRadius, activeCenterRadius);
+			canvas.drawRect(squareRect, mCenterPaint);
+		}
 
 		if (mTrackingCenter) {
 			int c = mCenterPaint.getColor();

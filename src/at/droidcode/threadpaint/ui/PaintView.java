@@ -17,6 +17,9 @@
 package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+
+import java.util.Observable;
+
 import android.content.Context;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -35,12 +38,24 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  * points on a canvas.
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
+	public class SurfaceObservable extends Observable {
+		@Override
+		public boolean hasChanged() {
+			return true;
+		}
+	}
+
 	private PaintThread paintThread;
+	private final Observable observable;
 	private ToolButtonAnimator toolButtonAnimator;
+	private float moveThreshold;
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		Log.d(TAG, "PaintView created");
+
+		observable = new SurfaceObservable();
+		moveThreshold = 1.0f;
 
 		SurfaceHolder holder = getHolder();
 		holder.addCallback(this);
@@ -65,7 +80,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
-		paintThread = new PaintThread(this);
+		paintThread = new PaintThread(this, observable);
 		paintThread.setRunning(true);
 		paintThread.start();
 	}
@@ -90,15 +105,26 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		toolButtonAnimator = animator;
 	}
 
+	public void setMoveThreshold(float f) {
+		moveThreshold = f;
+	}
+
 	/**
-	 * @return OnPaintChangedListener, usually the PaintThread.
+	 * @return Observable associated with this View.
+	 */
+	public Observable getObservable() {
+		return observable;
+	}
+
+	/**
+	 * @return OnPaintChangedListener, usually the PaintThread
 	 */
 	public OnPaintChangedListener getOnPaintChangedListener() {
 		return paintThread;
 	}
 
 	/**
-	 * @return OnBrushChangedListener, usually the PaintThread.
+	 * @return OnBrushChangedListener, usually the PaintThread
 	 */
 	public OnBrushChangedListener getOnBrushChangedListener() {
 		return paintThread;
@@ -124,22 +150,25 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			previousY = yTouchCoordinate;
 		}
 
+		final float dx = Math.abs(xTouchCoordinate - previousX);
+		final float dy = Math.abs(yTouchCoordinate - previousY);
+
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			startPath(xTouchCoordinate, yTouchCoordinate);
 			return true;
 		case MotionEvent.ACTION_MOVE:
-			updatePath(xTouchCoordinate, yTouchCoordinate);
+			if (dx > moveThreshold || dy > moveThreshold) {
+				updatePath(xTouchCoordinate, yTouchCoordinate);
+			}
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
 			return true;
 		case MotionEvent.ACTION_UP:
-			final float dx = Math.abs(xTouchCoordinate - previousX);
-			final float dy = Math.abs(yTouchCoordinate - previousY);
-			if (dx == 0f && dy == 0f) {
-				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
-			} else {
+			if (dx > moveThreshold || dy > moveThreshold) {
 				updatePath(xTouchCoordinate, yTouchCoordinate);
+			} else {
+				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
 			finishPath();
 			previousX = -1f;

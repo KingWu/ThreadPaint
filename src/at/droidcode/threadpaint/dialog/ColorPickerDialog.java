@@ -16,8 +16,12 @@
 
 package at.droidcode.threadpaint.dialog;
 
+import java.util.Observable;
+import java.util.Observer;
+
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Paint.Cap;
 import android.os.Bundle;
 import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
@@ -27,7 +31,7 @@ import at.droidcode.threadpaint.ThreadPaintApp;
  * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the width of the
  * brush's stroke.
  */
-public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
+public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener, Observer {
 
 	public interface OnPaintChangedListener {
 		void colorChanged(int color);
@@ -90,5 +94,13 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
 		final int strokeWidth = Math.round(maxStrokeWidth * percent);
 		paintListener.strokeChanged(strokeWidth);
+	}
+
+	@Override
+	public void update(Observable observable, Object data) {
+		if (data instanceof Cap) {
+			final ColorDialView colorDialView = (ColorDialView) findViewById(R.id.view_colorpicker);
+			colorDialView.setCenterShape((Cap) data);
+		}
 	}
 }

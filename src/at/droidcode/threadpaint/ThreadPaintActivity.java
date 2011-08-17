@@ -59,19 +59,10 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	}
 
 	@Override
-	public void onPause() {
-		Log.w(TAG, "PaintView paused");
-		if (colorPickerDialog != null) {
-			colorPickerDialog.dismiss();
-			colorPickerDialog = null;
-		}
-		super.onPause();
-	}
-
-	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
 		colorPickerDialog = null;
+		brushPickerDialog = null;
 		super.onDestroy();
 	}
 
@@ -143,6 +134,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 		if (colorPickerDialog == null) {
 			final OnPaintChangedListener l = paintView.getOnPaintChangedListener();
 			colorPickerDialog = new ColorPickerDialog(this, l);
+			paintView.getObservable().addObserver(colorPickerDialog);
 		}
 		colorPickerDialog.show();
 	}

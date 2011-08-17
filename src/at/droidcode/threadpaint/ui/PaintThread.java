@@ -16,6 +16,8 @@
 
 package at.droidcode.threadpaint.ui;
 
+import java.util.Observable;
+
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -46,9 +48,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private Paint pathPaint;
 
 	private final SurfaceHolder surfaceHolder;
+	private final Observable observable;
 
-	public PaintThread(SurfaceView view) {
+	public PaintThread(SurfaceView view, Observable o) {
 		surfaceHolder = view.getHolder();
+		observable = o;
 
 		keepRunning = false;
 		pathToDraw = new Path();
@@ -122,6 +126,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	public void capChanged(Cap cap) {
 		synchronized (lock) {
 			pathPaint.setStrokeCap(cap);
+			observable.notifyObservers(cap);
 		}
 	}
 
