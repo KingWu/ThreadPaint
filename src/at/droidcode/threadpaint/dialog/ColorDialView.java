@@ -62,7 +62,6 @@ public class ColorDialView extends View {
 			colorSpectrum[i] = colorArray.getColor(i, Color.RED);
 		}
 		colorArray.recycle();
-		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
 
 		final int maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
 
@@ -71,6 +70,7 @@ public class ColorDialView extends View {
 		stdCenterRadius = (maxStrokeWidth / 2) / 2;
 		activeCenterRadius = stdCenterRadius;
 
+		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
 		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		mPaint.setShader(s);
 		mPaint.setStyle(Paint.Style.STROKE);
