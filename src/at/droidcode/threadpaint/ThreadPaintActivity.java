@@ -65,13 +65,34 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
 	}
 
-	@Override
-	public void onStart() {
-		super.onStart();
-
-		boolean lock = preferences.getBoolean("lockorientation", true);
-		((ThreadPaintApp) getApplicationContext()).lockScreenOrientation(lock);
-	}
+	// @Override
+	// public void onStart() {
+	// super.onStart();
+	//
+	// Log.d(TAG, "onStart");
+	//
+	// if (preferences.getBoolean("lockorientation", true)) {
+	// Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+	// int screenOrientation;
+	// switch (display.getOrientation()) {
+	// case Configuration.ORIENTATION_PORTRAIT:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+	// Log.d(TAG, "Lock orientation PORTRAIT");
+	// break;
+	// case Configuration.ORIENTATION_LANDSCAPE:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+	// Log.d(TAG, "Lock orientation LANDSCAPE");
+	// break;
+	// default:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+	// Log.d(TAG, "Undefined orientation");
+	// }
+	// setRequestedOrientation(screenOrientation);
+	// } else {
+	// setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+	// Log.d(TAG, "Set orientation SENSOR");
+	// }
+	// }
 
 	@Override
 	public void onDestroy() {

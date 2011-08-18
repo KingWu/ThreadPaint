@@ -17,7 +17,6 @@
 package at.droidcode.threadpaint;
 
 import android.app.Application;
-import android.provider.Settings;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -49,9 +48,5 @@ public class ThreadPaintApp extends Application {
 	 */
 	public int maxStrokeWidth() {
 		return maxStrokeWidthPx;
-	}
-
-	public void lockScreenOrientation(boolean lock) {
-		Settings.System.putInt(getContentResolver(), Settings.System.ACCELEROMETER_ROTATION, lock ? 0 : 1);
 	}
 }
