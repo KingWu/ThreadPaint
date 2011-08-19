@@ -49,4 +49,31 @@ public class ThreadPaintApp extends Application {
 	public int maxStrokeWidth() {
 		return maxStrokeWidthPx;
 	}
+
+	// public void applyOrientationPreference(Activity activity) {
+	// if (orientationPreferenceChanged) {
+	// boolean lock = preferences.getBoolean("lockorientation", true);
+	// if (lock) {
+	// Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+	// int screenOrientation;
+	// switch (display.getOrientation()) {
+	// case Configuration.ORIENTATION_PORTRAIT:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+	// Log.d(TAG, "Lock orientation PORTRAIT");
+	// break;
+	// case Configuration.ORIENTATION_LANDSCAPE:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+	// Log.d(TAG, "Lock orientation LANDSCAPE");
+	// break;
+	// default:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+	// Log.d(TAG, "Undefined orientation");
+	// }
+	// activity.setRequestedOrientation(screenOrientation);
+	// } else {
+	// activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+	// Log.d(TAG, "Set orientation SENSOR");
+	// }
+	// }
+	// }
 }

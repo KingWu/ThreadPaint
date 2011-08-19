@@ -25,13 +25,18 @@ import java.util.Iterator;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
@@ -44,11 +49,12 @@ import at.droidcode.threadpaint.ui.PaintView;
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity implements ToolButtonAnimator {
+public class ThreadPaintActivity extends Activity implements ToolButtonAnimator, OnSharedPreferenceChangeListener {
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
+
 	private SharedPreferences preferences;
 
 	@Override
@@ -63,36 +69,8 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
 
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		preferences.registerOnSharedPreferenceChangeListener(this);
 	}
-
-	// @Override
-	// public void onStart() {
-	// super.onStart();
-	//
-	// Log.d(TAG, "onStart");
-	//
-	// if (preferences.getBoolean("lockorientation", true)) {
-	// Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-	// int screenOrientation;
-	// switch (display.getOrientation()) {
-	// case Configuration.ORIENTATION_PORTRAIT:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-	// Log.d(TAG, "Lock orientation PORTRAIT");
-	// break;
-	// case Configuration.ORIENTATION_LANDSCAPE:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-	// Log.d(TAG, "Lock orientation LANDSCAPE");
-	// break;
-	// default:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
-	// Log.d(TAG, "Undefined orientation");
-	// }
-	// setRequestedOrientation(screenOrientation);
-	// } else {
-	// setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-	// Log.d(TAG, "Set orientation SENSOR");
-	// }
-	// }
 
 	@Override
 	public void onDestroy() {
@@ -188,5 +166,30 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 			brushPickerDialog = new BrushPickerDialog(this, l);
 		}
 		brushPickerDialog.show();
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+		// this only works on devices with a tall screen like phones
+		if (preferences.getBoolean("lockorientation", true)) {
+			Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+			int screenOrientation;
+			switch (display.getRotation()) {
+			case Surface.ROTATION_0:
+				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+				break;
+			case Surface.ROTATION_90:
+				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+				break;
+			case Surface.ROTATION_270:
+				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+				break;
+			default:
+				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+			}
+			setRequestedOrientation(screenOrientation);
+		} else {
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		}
 	}
 }
