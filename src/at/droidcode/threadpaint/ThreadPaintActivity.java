@@ -18,6 +18,8 @@ package at.droidcode.threadpaint;
 
 import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -27,7 +29,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Display;
@@ -39,6 +44,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Toast;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog.OnBrushChangedListener;
@@ -50,6 +56,7 @@ import at.droidcode.threadpaint.ui.PaintView;
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
 public class ThreadPaintActivity extends Activity implements ToolButtonAnimator, OnSharedPreferenceChangeListener {
+	private Activity thisActivity;
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
@@ -61,6 +68,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_threadpaint);
+		thisActivity = this;
 
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
@@ -81,6 +89,25 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 	}
 
 	@Override
+	protected void onSaveInstanceState(Bundle b) {
+		Log.d(TAG, "saveInstanceState");
+		Bitmap copy = paintView.getBitmap().copy(Bitmap.Config.ARGB_8888, false);
+		b.putParcelable("WORKING_BITMAP", copy);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Bundle b) {
+		Log.d(TAG, "restoreInstanceState");
+		Bitmap saved = (Bitmap) b.getParcelable("WORKING_BITMAP");
+		paintView.setBitmap(saved.copy(Bitmap.Config.ARGB_8888, true));
+		saved.recycle();
+		// Bitmap bmp = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+		// Canvas cvs = new Canvas(bmp);
+		// cvs.drawColor(Color.GREEN);
+		// paintView.setBitmap(bmp);
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.menu, menu);
@@ -90,8 +117,8 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_color:
-			showColorPickerDialog();
+		case R.id.menu_save:
+			saveBitmap(paintView.getBitmap());
 			return true;
 		case R.id.menu_clear:
 			paintView.fillWithBackgroundColor();
@@ -166,6 +193,41 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 			brushPickerDialog = new BrushPickerDialog(this, l);
 		}
 		brushPickerDialog.show();
+	}
+
+	private void saveBitmap(final Bitmap bitmap) {
+		final String FILENAME = "threadpaint.png";
+
+		Thread thread = new Thread() {
+			@Override
+			public void run() {
+				String state = Environment.getExternalStorageState();
+
+				if (Environment.MEDIA_MOUNTED.equals(state)) {
+					File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), FILENAME);
+					try {
+						FileOutputStream fos = new FileOutputStream(file);
+						bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+
+						String[] paths = new String[] { file.getAbsolutePath() };
+						MediaScannerConnection.scanFile(thisActivity, paths, null, null);
+
+						thisActivity.runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								CharSequence text = getResources().getString(R.string.toast_save_success);
+								Toast.makeText(thisActivity, text, Toast.LENGTH_SHORT).show();
+							}
+						});
+					} catch (Exception e) {
+						Log.e(TAG, "ERROR writing " + file, e);
+					}
+				} else {
+					Log.w(TAG, "Cannot write to external storage!");
+				}
+			}
+		};
+		thread.start();
 	}
 
 	@Override

@@ -14,7 +14,8 @@
   limitations under the License. -->
 <resources>
     <string name="app_name">ThreadPaint</string>
-    <string name="menu_color">Color</string>
+    <string name="menu_save">Save</string>
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
+    <string name="toast_save_success">Saved file successfully</string>
 </resources>

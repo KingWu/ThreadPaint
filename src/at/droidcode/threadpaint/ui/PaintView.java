@@ -21,7 +21,7 @@ import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 import java.util.Observable;
 
 import android.content.Context;
-import android.graphics.Path;
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -80,7 +80,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
-		paintThread = new PaintThread(this, observable);
+		if (paintThread == null) {
+			paintThread = new PaintThread(this, observable);
+		}
 		paintThread.setRunning(true);
 		paintThread.start();
 	}
@@ -95,7 +97,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 				paintThread.join();
 				retry = false;
 			} catch (InterruptedException e) {
-				Log.e(TAG, "Error: ", e);
+				Log.e(TAG, "ERROR ", e);
 			}
 		}
 		paintThread = null;
@@ -122,6 +124,17 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		return observable;
 	}
 
+	public Bitmap getBitmap() {
+		return paintThread.getBitmap();
+	}
+
+	public void setBitmap(Bitmap bitmap) {
+		if (paintThread == null) {
+			paintThread = new PaintThread(this, observable);
+		}
+		paintThread.setBitmap(bitmap);
+	}
+
 	/**
 	 * @return OnPaintChangedListener, usually the PaintThread
 	 */
@@ -143,81 +156,43 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		paintThread.fillBackground();
 	}
 
-	private float previousX = -1f;
-	private float previousY = -1f;
+	private float previousX;
+	private float previousY;
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
 		float xTouchCoordinate = event.getX();
 		float yTouchCoordinate = event.getY();
 
-		if (previousX == -1f && previousY == -1f) {
-			previousX = xTouchCoordinate;
-			previousY = yTouchCoordinate;
-		}
-
 		final float dx = Math.abs(xTouchCoordinate - previousX);
 		final float dy = Math.abs(yTouchCoordinate - previousY);
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			startPath(xTouchCoordinate, yTouchCoordinate);
+			paintThread.startPath(xTouchCoordinate, yTouchCoordinate);
+			toolButtonAnimator.fadeOutToolButtons();
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
 			return true;
 		case MotionEvent.ACTION_MOVE:
 			if (dx > moveThreshold || dy > moveThreshold) {
-				updatePath(xTouchCoordinate, yTouchCoordinate);
+				paintThread.updatePath(previousX, previousY, xTouchCoordinate, yTouchCoordinate);
 			}
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
 			return true;
 		case MotionEvent.ACTION_UP:
 			if (dx > moveThreshold || dy > moveThreshold) {
-				updatePath(xTouchCoordinate, yTouchCoordinate);
+				paintThread.updatePath(previousX, previousY, xTouchCoordinate, yTouchCoordinate);
 			} else {
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
-			finishPath();
+			toolButtonAnimator.fadeInToolButtons();
 			previousX = -1f;
 			previousY = -1f;
 			return true;
 		default:
 			return false;
 		}
-	}
-
-	/**
-	 * Begin a new path at the specified coordinates on the Bitmap.
-	 * 
-	 * @param x X-Coordinate on the Bitmap.
-	 * @param y Y-Coordinate on the Bitmap.
-	 */
-	private void startPath(float x, float y) {
-		final Path path = paintThread.getPath();
-		path.rewind();
-		path.moveTo(x, y);
-		toolButtonAnimator.fadeOutToolButtons();
-		Log.d(TAG, "start path x: " + x + " y: " + y);
-	}
-
-	/**
-	 * Continue a started path to the specified coordinates on the Bitmap.
-	 * 
-	 * @param x2 X-Coordinate on the Bitmap.
-	 * @param y2 Y-Coordinate on the Bitmap.
-	 */
-	private void updatePath(float x2, float y2) {
-		final float x1 = (previousX + x2) / 2;
-		final float y1 = (previousY + y2) / 2;
-		final Path path = paintThread.getPath();
-		path.quadTo(x1, y1, x2, y2);
-		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
-	}
-
-	/**
-	 * Things to do when a path is complete.
-	 */
-	private void finishPath() {
-		toolButtonAnimator.fadeInToolButtons();
-		Log.d(TAG, "finish path");
 	}
 }

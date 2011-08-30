@@ -16,6 +16,8 @@
 
 package at.droidcode.threadpaint.ui;
 
+import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+
 import java.util.Observable;
 
 import android.graphics.Bitmap;
@@ -24,6 +26,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import at.droidcode.threadpaint.R;
@@ -42,10 +45,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	private volatile Path pathToDraw;
 	private Bitmap workingBitmap;
-	private Canvas workingCanvas;
+	private final Canvas workingCanvas;
 	private final Rect rectSurface;
 	private int backgroundColor;
-	private Paint pathPaint;
+	private final Paint pathPaint;
 
 	private final SurfaceHolder surfaceHolder;
 	private final Observable observable;
@@ -58,6 +61,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		pathToDraw = new Path();
 		workingBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		workingCanvas = new Canvas();
+		workingCanvas.setBitmap(workingBitmap);
 		rectSurface = new Rect();
 
 		final ThreadPaintApp appContext = (ThreadPaintApp) view.getContext().getApplicationContext();
@@ -93,9 +97,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		}
 		workingBitmap.recycle();
 		workingBitmap = null;
-		workingCanvas = null;
-		pathToDraw = null;
-		pathPaint = null;
 	}
 
 	/**
@@ -131,7 +132,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Called by the SurfaceView when its dimensions change.
+	 * Called by the SurfaceView on surfaceChanged().
 	 * 
 	 * @param width Width of the SurfaceView.
 	 * @param height Height of the SurfaceView.
@@ -139,7 +140,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void setSurfaceSize(int width, int height, Rect rect) {
 		synchronized (lock) {
-			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, true);
+			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, false);
 			workingCanvas.setBitmap(workingBitmap);
 			rectSurface.set(rect);
 		}
@@ -150,6 +151,21 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void setRunning(boolean b) {
 		keepRunning = b;
+	}
+
+	/**
+	 * Sets a new Bitmap and recycles the old one.
+	 * 
+	 * @param bitmap New Bitmap to draw
+	 */
+	void setBitmap(Bitmap bitmap) {
+		synchronized (lock) {
+			if (workingBitmap != null) {
+				workingBitmap.recycle();
+			}
+			workingBitmap = bitmap;
+			workingCanvas.setBitmap(workingBitmap);
+		}
 	}
 
 	/**
@@ -171,6 +187,37 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
+	 * Begin a new path at the specified coordinates on the Bitmap.
+	 * 
+	 * @param x X-Coordinate on the Bitmap.
+	 * @param y Y-Coordinate on the Bitmap.
+	 */
+	void startPath(float x, float y) {
+		synchronized (lock) {
+			pathToDraw.rewind();
+			pathToDraw.moveTo(x, y);
+		}
+		Log.d(TAG, "start path x: " + x + " y: " + y);
+	}
+
+	/**
+	 * Continue and interpolate a started path from the previous to the new coordinates on the Bitmap.
+	 * 
+	 * @param x1 Previous X-Coordinate on the Bitmap.
+	 * @param y1 Previous Y-Coordinate on the Bitmap.
+	 * @param x2 New X-Coordinate on the Bitmap.
+	 * @param y2 New Y-Coordinate on the Bitmap.
+	 */
+	void updatePath(float x1, float y1, float x2, float y2) {
+		synchronized (lock) {
+			final float cx = (x1 + x2) / 2;
+			final float cy = (y1 + y2) / 2;
+			pathToDraw.quadTo(cx, cy, x2, y2);
+		}
+		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
+	}
+
+	/**
 	 * Draws a point at the specified coordinates on the Bitmap.
 	 * 
 	 * @param x X-Coordinate of the point
@@ -181,6 +228,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			pathToDraw.rewind();
 			workingCanvas.drawPoint(x, y, pathPaint);
 		}
+		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
 
 	/**
