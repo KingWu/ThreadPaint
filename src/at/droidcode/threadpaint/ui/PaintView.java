@@ -38,6 +38,10 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  * points on a canvas.
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
+	/**
+	 * Observable to notify observers about changes to fields of the PaintView or PaintThread, e.g. to inform the
+	 * ColorPickerDialog that the cap has changed from round to squared.
+	 */
 	public class SurfaceObservable extends Observable {
 		@Override
 		public boolean hasChanged() {
@@ -188,8 +192,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
 			toolButtonAnimator.fadeInToolButtons();
-			previousX = -1f;
-			previousY = -1f;
 			return true;
 		default:
 			return false;
