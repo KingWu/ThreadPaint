@@ -32,7 +32,6 @@ import at.droidcode.threadpaint.ThreadPaintApp;
  * brush's stroke.
  */
 public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener, Observer {
-
 	public interface OnPaintChangedListener {
 		void colorChanged(int color);
 

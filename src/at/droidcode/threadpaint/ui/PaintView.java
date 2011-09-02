@@ -23,6 +23,7 @@ import java.util.Observable;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -42,7 +43,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * Observable to notify observers about changes to fields of the PaintView or PaintThread, e.g. to inform the
 	 * ColorPickerDialog that the cap has changed from round to squared.
 	 */
-	public class SurfaceObservable extends Observable {
+	private class SurfaceObservable extends Observable {
 		@Override
 		public boolean hasChanged() {
 			return true;
@@ -53,6 +54,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private final Observable observable;
 	private ToolButtonAnimator toolButtonAnimator;
 	private float moveThreshold;
+
+	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -84,24 +87,72 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
+
 		if (paintThread == null) {
-			paintThread = new PaintThread(this, observable);
+			Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+			paintThread = new PaintThread(this, bitmap);
+			paintThread.setDaemon(true);
+			paintThread.fillBackground();
 		}
-		paintThread.setRunning(true);
-		paintThread.start();
+		if (paintThread.isAlive()) {
+			paintThread.setPaused(false);
+		} else {
+			paintThread.setRunning(true);
+			paintThread.start();
+		}
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceDestroyed");
-		boolean retry = true;
-		paintThread.setRunning(false);
-		while (retry) {
-			try {
-				paintThread.join();
-				retry = false;
-			} catch (InterruptedException e) {
-				Log.e(TAG, "ERROR ", e);
+
+		if (paintThread != null) {
+			paintThread.setPaused(true);
+		}
+	}
+
+	/**
+	 * Invokes getBitmap() to store a copy of the current Bitmap in the indicated Bundle.
+	 * 
+	 * @param b Bundle to store attributes in
+	 */
+	public synchronized void saveState(Bundle b) {
+		Bitmap copy = getBitmap().copy(Bitmap.Config.ARGB_8888, true);
+		b.putParcelable(PaintView.STATE_WORKING_BITMAP, copy);
+	}
+
+	/**
+	 * If paintThread is null a new thread with the Bitmap stored in the Bundle is created. Typically called when
+	 * ThreadPaintActivity is being restored after having been previously destroyed and thus the thread was terminated.
+	 * 
+	 * @param savedState Bundle containing saved attributes
+	 */
+	public synchronized void restoreState(Bundle savedState) {
+		if (paintThread == null) {
+			Bitmap saved = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
+			paintThread = new PaintThread(this, saved);
+			paintThread.setDaemon(true);
+		} else {
+			Log.e(TAG, "ERROR: restoring state failed becuase thread was not null.");
+		}
+	}
+
+	/**
+	 * Stops the PaintThread and nulls the reference. Typically called when ThreadPaintActivity is being destroyed.
+	 */
+	public synchronized void terminatePaintThread() {
+		Log.d(TAG, "terminatePaintThread");
+		if (paintThread.isAlive()) {
+			boolean retry = true;
+			paintThread.setRunning(false);
+			paintThread.setPaused(false);
+			while (retry) {
+				try {
+					paintThread.join();
+					retry = false;
+				} catch (InterruptedException e) {
+					Log.e(TAG, "ERROR ", e);
+				}
 			}
 		}
 		paintThread = null;
@@ -132,10 +183,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		return paintThread.getBitmap();
 	}
 
+	/**
+	 * Set the Bitmap for the PainThread to draw.
+	 * 
+	 * @param bitmap The Bitmap the PaintThread will draw.
+	 */
 	public void setBitmap(Bitmap bitmap) {
-		if (paintThread == null) {
-			paintThread = new PaintThread(this, observable);
-		}
 		paintThread.setBitmap(bitmap);
 	}
 

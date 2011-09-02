@@ -60,10 +60,11 @@ public class ColorDialView extends View {
 	public ColorDialView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
+		// obtain the color spectrum from the ressources
 		final TypedArray colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
 		colorSpectrum = new int[colorArray.length()];
 		for (int i = 0; i < colorArray.length(); i++) {
-			colorSpectrum[i] = colorArray.getColor(i, Color.RED);
+			colorSpectrum[i] = colorArray.getColor(i, Color.BLACK);
 		}
 		colorArray.recycle();
 
@@ -101,6 +102,10 @@ public class ColorDialView extends View {
 	 */
 	void setInitalColor(int color) {
 		mCenterPaint.setColor(color);
+	}
+
+	Paint getCenterPaint() {
+		return mCenterPaint;
 	}
 
 	/**

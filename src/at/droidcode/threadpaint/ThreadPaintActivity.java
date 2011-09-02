@@ -83,28 +83,20 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
-		colorPickerDialog = null;
-		brushPickerDialog = null;
+		paintView.terminatePaintThread();
 		super.onDestroy();
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle b) {
-		Log.d(TAG, "saveInstanceState");
-		Bitmap copy = paintView.getBitmap().copy(Bitmap.Config.ARGB_8888, false);
-		b.putParcelable("WORKING_BITMAP", copy);
+		Log.d(TAG, "onSaveInstanceState");
+		paintView.saveState(b);
 	}
 
 	@Override
 	protected void onRestoreInstanceState(Bundle b) {
-		Log.d(TAG, "restoreInstanceState");
-		Bitmap saved = (Bitmap) b.getParcelable("WORKING_BITMAP");
-		paintView.setBitmap(saved.copy(Bitmap.Config.ARGB_8888, true));
-		saved.recycle();
-		// Bitmap bmp = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-		// Canvas cvs = new Canvas(bmp);
-		// cvs.drawColor(Color.GREEN);
-		// paintView.setBitmap(bmp);
+		Log.d(TAG, "onRestoreInstanceState");
+		paintView.restoreState(b);
 	}
 
 	@Override

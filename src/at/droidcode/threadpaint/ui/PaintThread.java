@@ -28,7 +28,6 @@ import android.graphics.Path;
 import android.graphics.Rect;
 import android.util.Log;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
@@ -42,6 +41,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Object lock = new Object();
 
 	private volatile boolean keepRunning;
+	private volatile boolean isPaused;
 
 	private volatile Path pathToDraw;
 	private Bitmap workingBitmap;
@@ -53,18 +53,19 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final SurfaceHolder surfaceHolder;
 	private final Observable observable;
 
-	public PaintThread(SurfaceView view, Observable o) {
-		surfaceHolder = view.getHolder();
-		observable = o;
+	public PaintThread(PaintView paintView, Bitmap bitmap) {
+		surfaceHolder = paintView.getHolder();
+		observable = paintView.getObservable();
+		workingBitmap = bitmap;
 
 		keepRunning = false;
+		isPaused = false;
 		pathToDraw = new Path();
-		workingBitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		workingCanvas = new Canvas();
 		workingCanvas.setBitmap(workingBitmap);
 		rectSurface = new Rect();
 
-		final ThreadPaintApp appContext = (ThreadPaintApp) view.getContext().getApplicationContext();
+		final ThreadPaintApp appContext = (ThreadPaintApp) paintView.getContext().getApplicationContext();
 		backgroundColor = appContext.getResources().getColor(R.color.canvas_background);
 
 		pathPaint = new Paint();
@@ -81,7 +82,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	@Override
 	public void run() {
-		fillBackground();
 		while (keepRunning) {
 			Canvas canvas = null;
 			try {
@@ -92,6 +92,15 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			} finally {
 				if (canvas != null) {
 					surfaceHolder.unlockCanvasAndPost(canvas);
+				}
+			}
+			synchronized (lock) {
+				if (isPaused) {
+					try {
+						lock.wait();
+					} catch (InterruptedException e) {
+						Log.e(TAG, "ERROR ", e);
+					}
 				}
 			}
 		}
@@ -154,6 +163,20 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
+	 * Cause the thread to wait or resume. Passing false if the thread is paused will call notify() on the waiting lock.
+	 * 
+	 * @param pause true to pause drawing, false to resume
+	 */
+	public void setPaused(boolean pause) {
+		synchronized (lock) {
+			if (!pause && isPaused) {
+				lock.notify();
+			}
+			isPaused = pause;
+		}
+	}
+
+	/**
 	 * Sets a new Bitmap and recycles the old one.
 	 * 
 	 * @param bitmap New Bitmap to draw
@@ -172,18 +195,21 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @return Bitmap the thread draws onto the surface.
 	 */
 	Bitmap getBitmap() {
-		synchronized (lock) {
-			return workingBitmap;
-		}
+		return workingBitmap;
 	}
 
 	/**
 	 * @return Path the thread draws onto the Canvas (Bitmap).
 	 */
 	Path getPath() {
-		synchronized (lock) {
-			return pathToDraw;
-		}
+		return pathToDraw;
+	}
+
+	/**
+	 * @return Paint the thread uses to draw a path.
+	 */
+	Paint getPaint() {
+		return pathPaint;
 	}
 
 	/**
