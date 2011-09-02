@@ -1,7 +1,5 @@
 package at.droidcode.threadpaint;
 
-import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -10,12 +8,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
-import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.view.WindowManager;
 
-public class ThreadPaintPreferencesManager implements OnSharedPreferenceChangeListener {
+/**
+ * Manages shared preferences for a list of activities.
+ */
+class ThreadPaintPreferencesManager implements OnSharedPreferenceChangeListener {
 	private final SharedPreferences preferences;
 	private final ArrayList<Activity> activities;
 
@@ -26,20 +26,25 @@ public class ThreadPaintPreferencesManager implements OnSharedPreferenceChangeLi
 		activities = new ArrayList<Activity>();
 	}
 
-	public void addActivity(Activity activity) {
-		Log.d(TAG, "addActivity");
+	/**
+	 * Adds an Activity to the manager. Preferences will be enforced on the added Activity.
+	 * 
+	 * @param activity Activity that wants to use the shared preferences
+	 */
+	void addActivity(Activity activity) {
 		activities.add(activity);
 		setScreenRotation(preferences, activity);
 	}
 
-	public void removeActivity(Activity activity) {
-		Log.d(TAG, "removeActivity");
+	/**
+	 * @param activity Activity that won't receive shared preference updates anymore
+	 */
+	void removeActivity(Activity activity) {
 		activities.remove(activity);
 	}
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		Log.d(TAG, "onSharedPreferenceChanged " + key);
 		Iterator<Activity> iterator = activities.iterator();
 		while (iterator.hasNext()) {
 			final Activity activity = iterator.next();
@@ -49,9 +54,10 @@ public class ThreadPaintPreferencesManager implements OnSharedPreferenceChangeLi
 		}
 	}
 
+	/**
+	 * Enforce the screen rotation preference on a Activity. Probably only works on devices with a rectangular screen.
+	 */
 	private void setScreenRotation(SharedPreferences sharedPreferences, Activity activity) {
-		Log.d(TAG, "setScreenRotation");
-		// This only works on devices with a tall screen like phones!
 		int screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 		if (sharedPreferences.getBoolean(LOCKORIENTATION, true)) {
 			Display display = ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
