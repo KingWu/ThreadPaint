@@ -18,4 +18,5 @@
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
     <string name="toast_save_success">Saved file successfully</string>
+    <string name="pref_orientation">LOCKORIENTATION</string>
 </resources>

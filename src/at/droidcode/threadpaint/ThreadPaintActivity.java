@@ -26,22 +26,15 @@ import java.util.Iterator;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.Display;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.Surface;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
@@ -55,14 +48,14 @@ import at.droidcode.threadpaint.ui.PaintView;
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity implements ToolButtonAnimator, OnSharedPreferenceChangeListener {
+public class ThreadPaintActivity extends Activity implements ToolButtonAnimator/* , OnSharedPreferenceChangeListener */{
 	private Activity thisActivity;
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
 
-	private SharedPreferences preferences;
+	private ThreadPaintPreferencesManager preferencesManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -76,13 +69,14 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
 
-		preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		preferences.registerOnSharedPreferenceChangeListener(this);
+		preferencesManager = ((ThreadPaintApp) this.getApplicationContext()).getPreferencesManager();
+		preferencesManager.addActivity(this);
 	}
 
 	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
+		preferencesManager.removeActivity(this);
 		paintView.terminatePaintThread();
 		super.onDestroy();
 	}
@@ -116,7 +110,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 			paintView.fillWithBackgroundColor();
 			return true;
 		case R.id.menu_prefs:
-			Intent i = new Intent(this, ThreadPaintPreferences.class);
+			Intent i = new Intent(this, ThreadPaintPreferencesActivity.class);
 			startActivity(i);
 			return true;
 		default:
@@ -222,28 +216,24 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 		thread.start();
 	}
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		// this only works on devices with a tall screen like phones
-		if (preferences.getBoolean("lockorientation", true)) {
-			Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-			int screenOrientation;
-			switch (display.getRotation()) {
-			case Surface.ROTATION_0:
-				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-				break;
-			case Surface.ROTATION_90:
-				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-				break;
-			case Surface.ROTATION_270:
-				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-				break;
-			default:
-				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
-			}
-			setRequestedOrientation(screenOrientation);
-		} else {
-			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
-		}
-	}
+	// @Override
+	// public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+	// // This only works on devices with a tall screen like phones!
+	// int screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+	// if (sharedPreferences.getBoolean("lockorientation", true)) {
+	// Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+	// switch (display.getRotation()) {
+	// case Surface.ROTATION_0:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+	// break;
+	// case Surface.ROTATION_90:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+	// break;
+	// case Surface.ROTATION_270:
+	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+	// break;
+	// }
+	// }
+	// setRequestedOrientation(screenOrientation);
+	// }
 }

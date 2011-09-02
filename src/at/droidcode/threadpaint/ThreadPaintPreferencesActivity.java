@@ -19,10 +19,21 @@ package at.droidcode.threadpaint;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
-public class ThreadPaintPreferences extends PreferenceActivity {
+public class ThreadPaintPreferencesActivity extends PreferenceActivity {
+	private ThreadPaintPreferencesManager preferencesManager;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
+
+		preferencesManager = ((ThreadPaintApp) this.getApplicationContext()).getPreferencesManager();
+		preferencesManager.addActivity(this);
+	}
+
+	@Override
+	public void onDestroy() {
+		preferencesManager.removeActivity(this);
+		super.onDestroy();
 	}
 }

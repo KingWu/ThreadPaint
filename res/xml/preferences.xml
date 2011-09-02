@@ -15,9 +15,9 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="User Settings">
-        <CheckBoxPreference android:key="lockorientation"
-        android:defaultValue="true"
-        android:title="Lock Orientation"
-        android:summary="Use portrait layout at all times"/>
+        <CheckBoxPreference
+        android:key="@string/pref_orientation"
+        android:title="Lock Display Orientation"
+        android:defaultValue="true"/>
     </PreferenceCategory>
 </PreferenceScreen>
