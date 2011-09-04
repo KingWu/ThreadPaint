@@ -40,15 +40,13 @@ import android.view.animation.AnimationUtils;
 import android.widget.Toast;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
-import at.droidcode.threadpaint.dialog.BrushPickerDialog.OnBrushChangedListener;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
-import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity implements ToolButtonAnimator/* , OnSharedPreferenceChangeListener */{
+public class ThreadPaintActivity extends Activity implements ToolButtonAnimator {
 	private Activity thisActivity;
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
@@ -163,9 +161,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator/
 	 */
 	private void showColorPickerDialog() {
 		if (colorPickerDialog == null) {
-			final OnPaintChangedListener l = paintView.getOnPaintChangedListener();
-			colorPickerDialog = new ColorPickerDialog(this, l);
-			paintView.getObservable().addObserver(colorPickerDialog);
+			colorPickerDialog = new ColorPickerDialog(this, paintView);
 		}
 		colorPickerDialog.show();
 	}
@@ -175,8 +171,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator/
 	 */
 	private void showBrushPickerDialog() {
 		if (brushPickerDialog == null) {
-			final OnBrushChangedListener l = paintView.getOnBrushChangedListener();
-			brushPickerDialog = new BrushPickerDialog(this, l);
+			brushPickerDialog = new BrushPickerDialog(this, paintView);
 		}
 		brushPickerDialog.show();
 	}
@@ -215,25 +210,4 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator/
 		};
 		thread.start();
 	}
-
-	// @Override
-	// public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-	// // This only works on devices with a tall screen like phones!
-	// int screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
-	// if (sharedPreferences.getBoolean("lockorientation", true)) {
-	// Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-	// switch (display.getRotation()) {
-	// case Surface.ROTATION_0:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-	// break;
-	// case Surface.ROTATION_90:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-	// break;
-	// case Surface.ROTATION_270:
-	// screenOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-	// break;
-	// }
-	// }
-	// setRequestedOrientation(screenOrientation);
-	// }
 }

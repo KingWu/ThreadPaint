@@ -17,11 +17,9 @@
 package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
-
-import java.util.Observable;
-
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -39,21 +37,9 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  * points on a canvas.
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
-	/**
-	 * Observable to notify observers about changes to fields of the PaintView or PaintThread, e.g. to inform the
-	 * ColorPickerDialog that the cap has changed from round to squared.
-	 */
-	private class SurfaceObservable extends Observable {
-		@Override
-		public boolean hasChanged() {
-			return true;
-		}
-	}
-
-	private PaintThread paintThread;
-	private final Observable observable;
-	private ToolButtonAnimator toolButtonAnimator;
 	private float moveThreshold;
+	private PaintThread paintThread;
+	private ToolButtonAnimator toolButtonAnimator;
 
 	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
 
@@ -61,14 +47,18 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		super(context, attrs);
 		Log.d(TAG, "PaintView created");
 
-		observable = new SurfaceObservable();
-		moveThreshold = 1.0f;
-
 		SurfaceHolder holder = getHolder();
 		holder.addCallback(this);
 
 		setFocusable(true);
 		setOnTouchListener(this);
+
+		moveThreshold = 1.0f; // TODO: make changeable from settings
+
+		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+		paintThread = new PaintThread(this, bitmap);
+		paintThread.setDaemon(true);
+		paintThread.fillBackground();
 	}
 
 	@Override
@@ -88,12 +78,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
 
-		if (paintThread == null) {
-			Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-			paintThread = new PaintThread(this, bitmap);
-			paintThread.setDaemon(true);
-			paintThread.fillBackground();
-		}
 		if (paintThread.isAlive()) {
 			paintThread.setPaused(false);
 		} else {
@@ -118,7 +102,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 */
 	public synchronized void saveState(Bundle b) {
 		Bitmap copy = getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-		b.putParcelable(PaintView.STATE_WORKING_BITMAP, copy);
+		b.putParcelable(STATE_WORKING_BITMAP, copy);
 	}
 
 	/**
@@ -128,13 +112,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * @param savedState Bundle containing saved attributes
 	 */
 	public synchronized void restoreState(Bundle savedState) {
-		if (paintThread == null) {
-			Bitmap saved = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
-			paintThread = new PaintThread(this, saved);
-			paintThread.setDaemon(true);
-		} else {
-			Log.e(TAG, "ERROR: restoring state failed becuase thread was not null.");
+		if (paintThread != null) {
+			terminatePaintThread();
 		}
+		Bitmap saved = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
+		paintThread = new PaintThread(this, saved);
+		paintThread.setDaemon(true);
 	}
 
 	/**
@@ -173,18 +156,21 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * @return Observable associated with this View
+	 * @return Bitmap the PaintThread is drawing onto
 	 */
-	public Observable getObservable() {
-		return observable;
-	}
-
 	public Bitmap getBitmap() {
 		return paintThread.getBitmap();
 	}
 
 	/**
-	 * Set the Bitmap for the PainThread to draw.
+	 * @return Paint the PaintThread is drawing the path with
+	 */
+	public Paint getPathPaint() {
+		return paintThread.getPaint();
+	}
+
+	/**
+	 * Set the Bitmap for the PaintThread to draw.
 	 * 
 	 * @param bitmap The Bitmap the PaintThread will draw.
 	 */

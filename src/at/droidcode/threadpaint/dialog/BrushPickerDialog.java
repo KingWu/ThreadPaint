@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import at.droidcode.threadpaint.R;
+import at.droidcode.threadpaint.ui.PaintView;
 
 public class BrushPickerDialog extends AlertDialog implements View.OnClickListener {
 
@@ -16,9 +17,9 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 
 	private final OnBrushChangedListener capListener;
 
-	public BrushPickerDialog(Context context, OnBrushChangedListener l) {
+	public BrushPickerDialog(Context context, PaintView p) {
 		super(context);
-		capListener = l;
+		capListener = p.getOnBrushChangedListener();
 	}
 
 	@Override
