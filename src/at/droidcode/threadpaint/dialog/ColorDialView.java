@@ -44,6 +44,7 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source Project.
  */
 public class ColorDialView extends View {
+	private final Context context;
 	private final int centerX;
 	private final int centerY;
 	private final int stdCenterRadius;
@@ -54,19 +55,21 @@ public class ColorDialView extends View {
 
 	private final Paint mPaint;
 	private final Paint mCenterPaint;
-	private final int[] colorSpectrum;
+	private int[] colorSpectrum;
 	private OnPaintChangedListener paintListener;
 
-	public ColorDialView(Context context, AttributeSet attrs) {
-		super(context, attrs);
+	public ColorDialView(Context c, AttributeSet attrs) {
+		super(c, attrs);
 
-		// obtain the color spectrum from the ressources
-		final TypedArray colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
-		colorSpectrum = new int[colorArray.length()];
-		for (int i = 0; i < colorArray.length(); i++) {
-			colorSpectrum[i] = colorArray.getColor(i, Color.BLACK);
-		}
-		colorArray.recycle();
+		context = c;
+
+		// // obtain the color spectrum from the ressources
+		// final TypedArray colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
+		// colorSpectrum = new int[colorArray.length()];
+		// for (int i = 0; i < colorArray.length(); i++) {
+		// colorSpectrum[i] = colorArray.getColor(i, Color.BLACK);
+		// }
+		// colorArray.recycle();
 
 		final int maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
 
@@ -76,18 +79,46 @@ public class ColorDialView extends View {
 		activeCenterRadius = stdCenterRadius;
 		centerShape = Cap.ROUND;
 
-		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
-		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mPaint.setShader(s);
-		mPaint.setStyle(Paint.Style.STROKE);
-		mPaint.setStrokeWidth(stdCenterRadius);
+		// Shader s = new SweepGradient(0, 0, colorSpectrum, null);
+		// mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		// mPaint.setShader(s);
+		// mPaint.setStyle(Paint.Style.STROKE);
+		// mPaint.setStrokeWidth(stdCenterRadius);
 
 		mCenterPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		mCenterPaint.setColor(Color.BLACK);
 		mCenterPaint.setStrokeWidth(Utils.dp2px(context, 5));
 
 		ovalRect = new RectF();
 		squareRect = new RectF();
+
+		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+		setGrayscale(false);
+	}
+
+	// obtain the color spectrum from the ressources
+	void setGrayscale(boolean b) {
+		final TypedArray colorArray;
+		if (b) {
+			colorArray = context.getResources().obtainTypedArray(R.array.gray_spectrum);
+			mCenterPaint.setColor(Color.WHITE);
+		} else {
+			colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
+			final int color = getContext().getResources().getColor(R.color.stroke_standard);
+			mCenterPaint.setColor(color);
+		}
+		colorSpectrum = new int[colorArray.length()];
+		for (int i = 0; i < colorArray.length(); i++) {
+			colorSpectrum[i] = colorArray.getColor(i, Color.BLACK);
+		}
+		colorArray.recycle();
+
+		Shader s = new SweepGradient(0, 0, colorSpectrum, null);
+		mPaint.setShader(s);
+		mPaint.setStyle(Paint.Style.STROKE);
+		mPaint.setStrokeWidth(stdCenterRadius);
+
+		postInvalidate();
 	}
 
 	/**

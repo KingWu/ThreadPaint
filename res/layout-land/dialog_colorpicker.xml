@@ -18,16 +18,34 @@
   android:layout_height="fill_parent"
   android:padding="10dp"
   android:background="@drawable/dialog_border">
-  
+    
   <at.droidcode.threadpaint.dialog.ColorDialView android:id="@+id/view_colordial"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_marginRight="10dp"/>
+    android:layout_marginRight="10dp"
+    android:layout_weight="0"/>
     
-  <SeekBar android:id="@+id/seekbar_stroke"
-  android:layout_width="150dp"
-  android:layout_height="wrap_content"
-  android:max="100"
-  android:progress="50"/>
+  <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  	android:orientation="vertical"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:layout_weight="1">
+  	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  		android:orientation="horizontal"
+  		android:layout_width="wrap_content"
+  		android:layout_height="wrap_content">
+  		<Button android:id="@+id/btn_colorpicker_color" android:text="color"
+  			android:layout_width="fill_parent" android:layout_height="wrap_content"
+  			android:layout_weight="1"/>
+  		<Button android:id="@+id/btn_colorpicker_gray" android:text="gray"
+  			android:layout_width="fill_parent" android:layout_height="wrap_content"
+  			android:layout_weight="1"/>
+  	</LinearLayout>
+  	<SeekBar android:id="@+id/seekbar_stroke"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:max="100"
+  	android:progress="50"/>
+  </LinearLayout>
     
 </LinearLayout>

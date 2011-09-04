@@ -19,6 +19,8 @@ package at.droidcode.threadpaint.dialog;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.ThreadPaintApp;
@@ -35,6 +37,7 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		void strokeChanged(int width);
 	}
 
+	private ColorDialView colorDialView;
 	private final PaintView paintView;
 	private final OnPaintChangedListener paintListener;
 	private final int maxStrokeWidth;
@@ -64,8 +67,31 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		};
 
 		setContentView(R.layout.dialog_colorpicker);
+		colorDialView = (ColorDialView) findViewById(R.id.view_colordial);
 
-		final ColorDialView colorDialView = (ColorDialView) findViewById(R.id.view_colordial);
+		final Button colorButton = (Button) findViewById(R.id.btn_colorpicker_color);
+		colorButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				colorDialView.setGrayscale(false);
+			}
+		});
+		final Button grayButton = (Button) findViewById(R.id.btn_colorpicker_gray);
+		grayButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				colorDialView.setGrayscale(true);
+			}
+		});
+
+		// final TabHost tabHost = (TabHost) findViewById(R.id.colorpicker_tabhost);
+		// tabHost.setup();
+		//
+		// View view1 = createTabView(tabHost.getContext(), "colors");
+		// TabHost.TabSpec spec1 =
+		// tabHost.newTabSpec("colors").setIndicator(view1).setContent(R.id.colorpicker_content);
+		// tabHost.addTab(spec1);
+
 		colorDialView.setOnPaintChangedListener(l);
 
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
@@ -75,10 +101,16 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		strokeSeekBar.setOnSeekBarChangeListener(this);
 	}
 
+	// private static View createTabView(final Context context, final String text) {
+	// View view = LayoutInflater.from(context).inflate(R.layout.tab_dialog, null);
+	// TextView tv = (TextView) view.findViewById(R.id.dialog_tabs_text);
+	// tv.setText(text);
+	// return view;
+	// }
+
 	@Override
 	public void show() {
 		super.show();
-		final ColorDialView colorDialView = (ColorDialView) findViewById(R.id.view_colordial);
 		colorDialView.setCenterShape(paintView.getPathPaint().getStrokeCap());
 	}
 

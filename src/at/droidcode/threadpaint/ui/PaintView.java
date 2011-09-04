@@ -40,7 +40,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private float moveThreshold;
 	private PaintThread paintThread;
 	private ToolButtonAnimator toolButtonAnimator;
-
 	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
 
 	public PaintView(Context context, AttributeSet attrs) {
