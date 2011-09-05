@@ -23,10 +23,10 @@
   	android:orientation="horizontal"
   	android:layout_width="fill_parent"
   	android:layout_height="wrap_content">
-  	<Button android:id="@+id/btn_colorpicker_color" android:text="color"
+  	<Button android:id="@+id/btn_colorpicker_color" android:text="@string/btn_color"
   	android:layout_width="fill_parent" android:layout_height="wrap_content"
   	android:layout_weight="1"/>
-  	<Button android:id="@+id/btn_colorpicker_gray" android:text="gray"
+  	<Button android:id="@+id/btn_colorpicker_grey" android:text="@string/btn_grey"
   	android:layout_width="fill_parent" android:layout_height="wrap_content"
   	android:layout_weight="1"/>
   </LinearLayout>

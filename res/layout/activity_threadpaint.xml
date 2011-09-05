@@ -24,11 +24,11 @@
     <Button android:id="@+id/btn_color_picker"
     	style="@style/ToolButton"
     	android:layout_alignParentTop="true"
-    	android:text="color" />
+    	android:text="@string/btn_color" />
     	
     <Button android:id="@+id/btn_brush_cap_picker"
     	style="@style/ToolButton"
     	android:layout_below="@id/btn_color_picker"
-    	android:text=" cap " />
+    	android:text="@string/btn_brush" />
     	
 </RelativeLayout>

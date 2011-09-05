@@ -18,11 +18,17 @@ package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import at.droidcode.threadpaint.R;
@@ -44,8 +50,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private Bitmap workingBitmap;
 	private final Canvas workingCanvas;
 	private final Rect rectSurface;
-	private int backgroundColor;
 	private final Paint pathPaint;
+	private final Paint checkeredPattern;
+	private final Paint transparencyPaint;
 
 	private final SurfaceHolder surfaceHolder;
 
@@ -61,7 +68,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		rectSurface = new Rect();
 
 		final ThreadPaintApp appContext = (ThreadPaintApp) paintView.getContext().getApplicationContext();
-		backgroundColor = appContext.getResources().getColor(R.color.canvas_background);
 
 		pathPaint = new Paint();
 		pathPaint.setStyle(Paint.Style.STROKE);
@@ -73,6 +79,15 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		pathPaint.setStrokeJoin(Paint.Join.ROUND);
 		pathPaint.setStrokeCap(Paint.Cap.ROUND);
 		pathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
+
+		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		checkeredPattern = new Paint();
+		checkeredPattern.setShader(shader);
+
+		transparencyPaint = new Paint();
+		transparencyPaint.setColor(Color.TRANSPARENT);
+		transparencyPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
 	}
 
 	@Override
@@ -109,6 +124,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param canvas The Canvas onto which the Bitmap is drawn.
 	 */
 	private void doDraw(Canvas canvas) {
+		canvas.drawPaint(checkeredPattern);
 		workingCanvas.drawPath(pathToDraw, pathPaint);
 		canvas.drawBitmap(workingBitmap, rectSurface, rectSurface, null);
 	}
@@ -252,25 +268,21 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Draw the current background color over the whole Canvas (Bitmap).
-	 */
-	void fillBackground() {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			workingCanvas.drawColor(backgroundColor);
-		}
-	}
-
-	/**
 	 * Change the current background color and draw it over the whole Canvas (Bitmap).
 	 * 
 	 * @param color Color to set as the new background color
 	 */
 	void fillBackground(int color) {
 		synchronized (lock) {
-			backgroundColor = color;
 			pathToDraw.rewind();
-			workingCanvas.drawColor(backgroundColor);
+			workingCanvas.drawColor(color);
+		}
+	}
+
+	void clearCanvas() {
+		synchronized (lock) {
+			pathToDraw.rewind();
+			workingCanvas.drawPaint(transparencyPaint);
 		}
 	}
 }

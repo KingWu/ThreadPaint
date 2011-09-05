@@ -17,6 +17,9 @@
     <string name="menu_save">Save</string>
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
+    <string name="btn_color">Color</string>
+    <string name="btn_grey">Grey</string>
+    <string name="btn_brush">Brush</string>
     <string name="toast_save_success">Saved file successfully</string>
     <string name="pref_orientation">LOCKORIENTATION</string>
 </resources>

@@ -37,7 +37,7 @@
   		<Button android:id="@+id/btn_colorpicker_color" android:text="color"
   			android:layout_width="fill_parent" android:layout_height="wrap_content"
   			android:layout_weight="1"/>
-  		<Button android:id="@+id/btn_colorpicker_gray" android:text="gray"
+  		<Button android:id="@+id/btn_colorpicker_grey" android:text="grey"
   			android:layout_width="fill_parent" android:layout_height="wrap_content"
   			android:layout_weight="1"/>
   	</LinearLayout>

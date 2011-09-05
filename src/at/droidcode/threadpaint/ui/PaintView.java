@@ -57,7 +57,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		paintThread = new PaintThread(this, bitmap);
 		paintThread.setDaemon(true);
-		paintThread.fillBackground();
+		// paintThread.clearCanvas();
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * Fills the whole Canvas with the current background color.
 	 */
 	public void fillWithBackgroundColor() {
-		paintThread.fillBackground();
+		paintThread.clearCanvas();
 	}
 
 	private float previousX;

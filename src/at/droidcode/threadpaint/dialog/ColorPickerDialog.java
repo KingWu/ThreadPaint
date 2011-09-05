@@ -76,8 +76,8 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 				colorDialView.setGrayscale(false);
 			}
 		});
-		final Button grayButton = (Button) findViewById(R.id.btn_colorpicker_gray);
-		grayButton.setOnClickListener(new View.OnClickListener() {
+		final Button greyButton = (Button) findViewById(R.id.btn_colorpicker_grey);
+		greyButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				colorDialView.setGrayscale(true);

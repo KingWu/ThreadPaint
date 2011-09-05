@@ -22,7 +22,7 @@
 		<item name="violet">#FF7F00FF</item>
 		<item name="red1">#FFFF0000</item>
 	</array>
-	<array name="gray_spectrum">
+	<array name="grey_spectrum">
 		<item name="black0">#FF000000</item>
 		<item name="white">#FFFFFFFF</item>
 		<item name="black1">#FF000000</item>

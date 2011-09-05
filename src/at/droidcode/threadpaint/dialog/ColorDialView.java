@@ -100,7 +100,7 @@ public class ColorDialView extends View {
 	void setGrayscale(boolean b) {
 		final TypedArray colorArray;
 		if (b) {
-			colorArray = context.getResources().obtainTypedArray(R.array.gray_spectrum);
+			colorArray = context.getResources().obtainTypedArray(R.array.grey_spectrum);
 			mCenterPaint.setColor(Color.WHITE);
 		} else {
 			colorArray = context.getResources().obtainTypedArray(R.array.color_spectrum);
