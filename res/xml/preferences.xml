@@ -16,8 +16,12 @@
   xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="User Settings">
         <CheckBoxPreference
-        android:key="@string/pref_orientation"
-        android:title="Lock Display Orientation"
+        android:key="pref_orientation"
+        android:title="@string/pref_orientation"
         android:defaultValue="true"/>
+        <EditTextPreference
+        android:key="pref_movethreshold"
+        android:title="@string/pref_movethreshold"
+        android:defaultValue="1.0"/>
     </PreferenceCategory>
 </PreferenceScreen>

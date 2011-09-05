@@ -52,7 +52,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		setFocusable(true);
 		setOnTouchListener(this);
 
-		moveThreshold = 1.0f; // TODO: make changeable from settings
+		moveThreshold = 1.0f;
 
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		paintThread = new PaintThread(this, bitmap);

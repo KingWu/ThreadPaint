@@ -17,8 +17,6 @@
 package at.droidcode.threadpaint;
 
 import android.app.Application;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.view.Display;
 import android.view.WindowManager;
 
@@ -32,7 +30,6 @@ public class ThreadPaintApp extends Application {
 	private static final int MAX_STROKE_WIDTH_DP_HORZ = 125;
 
 	private int maxStrokeWidthPx;
-	private ThreadPaintPreferencesManager preferencesManager;
 
 	@Override
 	public void onCreate() {
@@ -44,10 +41,6 @@ public class ThreadPaintApp extends Application {
 		} else {
 			maxStrokeWidthPx = Utils.dp2px(getApplicationContext(), MAX_STROKE_WIDTH_DP_HORZ);
 		}
-
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		preferencesManager = new ThreadPaintPreferencesManager(preferences);
-		preferences.registerOnSharedPreferenceChangeListener(preferencesManager);
 	}
 
 	/**
@@ -55,9 +48,5 @@ public class ThreadPaintApp extends Application {
 	 */
 	public int maxStrokeWidth() {
 		return maxStrokeWidthPx;
-	}
-
-	public ThreadPaintPreferencesManager getPreferencesManager() {
-		return preferencesManager;
 	}
 }

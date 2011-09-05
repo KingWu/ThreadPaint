@@ -22,10 +22,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.media.MediaScannerConnection;
 import android.os.Bundle;
@@ -38,6 +38,8 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
+import at.droidcode.threadpaint.ThreadPaintPreferencesActivity.Preference;
+import at.droidcode.threadpaint.api.PreferencesCallback;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
@@ -46,14 +48,12 @@ import at.droidcode.threadpaint.ui.PaintView;
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity implements ToolButtonAnimator {
+public class ThreadPaintActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
 	private Activity thisActivity;
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
-
-	private ThreadPaintPreferencesManager preferencesManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -67,14 +67,14 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
 
-		preferencesManager = ((ThreadPaintApp) this.getApplicationContext()).getPreferencesManager();
-		preferencesManager.addActivity(this);
+		ThreadPaintPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
+		ThreadPaintPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
 	}
 
 	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
-		preferencesManager.removeActivity(this);
+		ThreadPaintPreferencesActivity.removeCallback(this);
 		paintView.terminatePaintThread();
 		super.onDestroy();
 	}
@@ -147,12 +147,10 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 	 * @param a Animation to use
 	 */
 	private void animateViews(ArrayList<View> views, Animation a) {
-		Iterator<View> iterator = views.iterator();
-		while (iterator.hasNext()) {
-			final View view = iterator.next();
+		for (int i = 0; i < views.size(); i++) {
 			a.reset();
-			view.clearAnimation();
-			view.startAnimation(a);
+			views.get(i).clearAnimation();
+			views.get(i).startAnimation(a);
 		}
 	}
 
@@ -209,5 +207,25 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator 
 			}
 		};
 		thread.start();
+	}
+
+	@Override
+	public void preferenceChanged(SharedPreferences preferences, String key) {
+		if (key.equals(Preference.LOCKORIENTATION.key())) {
+			boolean lock = preferences.getBoolean(key, true);
+			Log.d(TAG, "lockScreenOrientation " + lock);
+			Utils.lockScreenOrientation(lock, this);
+		} else if (key.equals(Preference.MOVETHRESHOLD.key())) {
+			float f = 1.0f;
+			try {
+				f = Float.parseFloat(preferences.getString(key, "1.0f"));
+			} catch (NumberFormatException e) {
+				Log.e(TAG, "ERROR ", e);
+				CharSequence text = getResources().getString(R.string.toast_float_parse_error);
+				Toast.makeText(thisActivity, text, Toast.LENGTH_SHORT).show();
+			}
+			Log.d(TAG, "setMoveThreshold " + Float.toString(f));
+			paintView.setMoveThreshold(f);
+		}
 	}
 }

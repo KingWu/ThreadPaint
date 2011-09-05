@@ -21,5 +21,7 @@
     <string name="btn_grey">Grey</string>
     <string name="btn_brush">Brush</string>
     <string name="toast_save_success">Saved file successfully</string>
-    <string name="pref_orientation">LOCKORIENTATION</string>
+    <string name="toast_float_parse_error">Error: value is not a flaot</string>
+    <string name="pref_orientation">Lock Orientation</string>
+    <string name="pref_movethreshold">Path Threshold</string>
 </resources>
