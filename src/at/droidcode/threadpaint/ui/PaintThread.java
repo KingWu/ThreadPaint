@@ -16,7 +16,7 @@
 
 package at.droidcode.threadpaint.ui;
 
-import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
@@ -32,7 +32,7 @@ import android.graphics.Shader;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import at.droidcode.threadpaint.R;
-import at.droidcode.threadpaint.ThreadPaintApp;
+import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
@@ -67,7 +67,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		workingCanvas.setBitmap(workingBitmap);
 		rectSurface = new Rect();
 
-		final ThreadPaintApp appContext = (ThreadPaintApp) paintView.getContext().getApplicationContext();
+		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
 
 		pathPaint = new Paint();
 		pathPaint.setStyle(Paint.Style.STROKE);

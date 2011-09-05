@@ -16,7 +16,7 @@
 
 package at.droidcode.threadpaint;
 
-import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+import static at.droidcode.threadpaint.TpApplication.TAG;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -38,7 +38,7 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
-import at.droidcode.threadpaint.ThreadPaintPreferencesActivity.Preference;
+import at.droidcode.threadpaint.TpPreferencesActivity.Preference;
 import at.droidcode.threadpaint.api.PreferencesCallback;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
@@ -48,7 +48,7 @@ import at.droidcode.threadpaint.ui.PaintView;
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
-public class ThreadPaintActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
+public class TpMainActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
 	private Activity thisActivity;
 	private PaintView paintView;
 	private ArrayList<View> toolButtons;
@@ -67,14 +67,14 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
 
-		ThreadPaintPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
-		ThreadPaintPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
+		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
+		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
 	}
 
 	@Override
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
-		ThreadPaintPreferencesActivity.removeCallback(this);
+		TpPreferencesActivity.removeCallback(this);
 		paintView.terminatePaintThread();
 		super.onDestroy();
 	}
@@ -108,7 +108,7 @@ public class ThreadPaintActivity extends Activity implements ToolButtonAnimator,
 			paintView.fillWithBackgroundColor();
 			return true;
 		case R.id.menu_prefs:
-			Intent i = new Intent(this, ThreadPaintPreferencesActivity.class);
+			Intent i = new Intent(this, TpPreferencesActivity.class);
 			startActivity(i);
 			return true;
 		default:

@@ -21,7 +21,7 @@
 
 package at.droidcode.threadpaint.dialog;
 
-import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -36,7 +36,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import at.droidcode.threadpaint.R;
-import at.droidcode.threadpaint.ThreadPaintApp;
+import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.Utils;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
@@ -71,7 +71,7 @@ public class ColorDialView extends View {
 		// }
 		// colorArray.recycle();
 
-		final int maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
+		final int maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
 
 		centerX = maxStrokeWidth - (maxStrokeWidth / 6);
 		centerY = centerX;

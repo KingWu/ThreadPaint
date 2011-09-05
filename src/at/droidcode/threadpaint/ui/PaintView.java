@@ -16,7 +16,7 @@
 
 package at.droidcode.threadpaint.ui;
 
-import static at.droidcode.threadpaint.ThreadPaintApp.TAG;
+import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Paint;

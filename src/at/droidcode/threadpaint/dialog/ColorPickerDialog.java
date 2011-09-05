@@ -23,7 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
-import at.droidcode.threadpaint.ThreadPaintApp;
+import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
@@ -46,7 +46,7 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		super(context);
 		paintView = p;
 		paintListener = p.getOnPaintChangedListener();
-		maxStrokeWidth = ((ThreadPaintApp) context.getApplicationContext()).maxStrokeWidth();
+		maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
 	}
 
 	@Override

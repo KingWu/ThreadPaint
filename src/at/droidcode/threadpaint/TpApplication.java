@@ -23,7 +23,7 @@ import android.view.WindowManager;
 /**
  * This class is used to provide application global variables that need to be initialized on startup.
  */
-public class ThreadPaintApp extends Application {
+public class TpApplication extends Application {
 	public static final String TAG = "THREADPAINT";
 
 	private static final int MAX_STROKE_WIDTH_DP_VERT = 150;
