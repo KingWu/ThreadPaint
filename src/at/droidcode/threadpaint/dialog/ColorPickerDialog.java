@@ -84,14 +84,6 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 			}
 		});
 
-		// final TabHost tabHost = (TabHost) findViewById(R.id.colorpicker_tabhost);
-		// tabHost.setup();
-		//
-		// View view1 = createTabView(tabHost.getContext(), "colors");
-		// TabHost.TabSpec spec1 =
-		// tabHost.newTabSpec("colors").setIndicator(view1).setContent(R.id.colorpicker_content);
-		// tabHost.addTab(spec1);
-
 		colorDialView.setOnPaintChangedListener(l);
 
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
@@ -100,13 +92,6 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_stroke);
 		strokeSeekBar.setOnSeekBarChangeListener(this);
 	}
-
-	// private static View createTabView(final Context context, final String text) {
-	// View view = LayoutInflater.from(context).inflate(R.layout.tab_dialog, null);
-	// TextView tv = (TextView) view.findViewById(R.id.dialog_tabs_text);
-	// tv.setText(text);
-	// return view;
-	// }
 
 	@Override
 	public void show() {
