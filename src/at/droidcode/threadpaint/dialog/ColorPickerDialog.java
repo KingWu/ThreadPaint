@@ -21,32 +21,26 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
-import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
  * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the width of the
  * brush's stroke.
  */
-public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarChangeListener {
+public class ColorPickerDialog extends AlertDialog /* implements SeekBar.OnSeekBarChangeListener */{
 	public interface OnPaintChangedListener {
 		void colorChanged(int color);
-
-		void strokeChanged(int width);
 	}
 
 	private ColorDialView colorDialView;
 	private final PaintView paintView;
 	private final OnPaintChangedListener paintListener;
-	private final int maxStrokeWidth;
 
 	public ColorPickerDialog(Context context, PaintView p) {
 		super(context);
 		paintView = p;
 		paintListener = p.getOnPaintChangedListener();
-		maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
 	}
 
 	@Override
@@ -58,11 +52,6 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 			public void colorChanged(int color) {
 				paintListener.colorChanged(color);
 				dismiss();
-			}
-
-			@Override
-			public void strokeChanged(int width) {
-				paintListener.strokeChanged(width);
 			}
 		};
 
@@ -88,33 +77,12 @@ public class ColorPickerDialog extends AlertDialog implements SeekBar.OnSeekBarC
 
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
 		colorDialView.setInitalColor(color);
-
-		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_stroke);
-		strokeSeekBar.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
 	public void show() {
 		super.show();
 		colorDialView.setCenterShape(paintView.getPathPaint().getStrokeCap());
-	}
-
-	@Override
-	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		final float percent = (float) progress / (float) seekBar.getMax();
-		final int strokeWidth = Math.round(maxStrokeWidth * percent);
-		final ColorDialView colorPickerView = (ColorDialView) findViewById(R.id.view_colordial);
-		colorPickerView.setCenterRadius(strokeWidth / 2);
-	}
-
-	@Override
-	public void onStartTrackingTouch(SeekBar seekBar) {
-	}
-
-	@Override
-	public void onStopTrackingTouch(SeekBar seekBar) {
-		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
-		final int strokeWidth = Math.round(maxStrokeWidth * percent);
-		paintListener.strokeChanged(strokeWidth);
+		colorDialView.setCenterRadius(Math.round(paintView.getPathPaint().getStrokeWidth() / 2));
 	}
 }

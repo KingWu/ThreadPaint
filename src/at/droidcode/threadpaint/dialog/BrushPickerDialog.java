@@ -6,45 +6,85 @@ import android.graphics.Paint.Cap;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SeekBar;
 import at.droidcode.threadpaint.R;
+import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.ui.PaintView;
 
-public class BrushPickerDialog extends AlertDialog implements View.OnClickListener {
-
+public class BrushPickerDialog extends AlertDialog implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
 	public interface OnBrushChangedListener {
 		void capChanged(Cap cap);
+
+		void strokeChanged(int width);
 	}
 
-	private final OnBrushChangedListener capListener;
+	private BrushTipView brushTipView;
+	private final PaintView paintView;
+	private final int maxStrokeWidth;
+	private final OnBrushChangedListener brushListener;
 
 	public BrushPickerDialog(Context context, PaintView p) {
 		super(context);
-		capListener = p.getOnBrushChangedListener();
+		maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
+		brushListener = p.getOnBrushChangedListener();
+		paintView = p;
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.dialog_brushpicker);
+
+		brushTipView = (BrushTipView) findViewById(R.id.view_brushtip);
+		brushTipView.setParentDialog(this);
+
 		final Button round = (Button) findViewById(R.id.btn_cap_round);
 		round.setOnClickListener(this);
 		final Button square = (Button) findViewById(R.id.btn_cap_squared);
 		square.setOnClickListener(this);
+
+		final SeekBar strokeSeekBar = (SeekBar) findViewById(R.id.seekbar_brush_tip);
+		strokeSeekBar.setOnSeekBarChangeListener(this);
+	}
+
+	@Override
+	public void show() {
+		super.show();
+		brushTipView.setCenterColor(paintView.getPathPaint().getColor());
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.btn_cap_round:
-			capListener.capChanged(Cap.ROUND);
-			dismiss();
+			brushListener.capChanged(Cap.ROUND);
+			brushTipView.setCenterShape(Cap.ROUND);
 			break;
 		case R.id.btn_cap_squared:
-			capListener.capChanged(Cap.SQUARE);
-			dismiss();
+			brushListener.capChanged(Cap.SQUARE);
+			brushTipView.setCenterShape(Cap.SQUARE);
 			break;
 		default:
 			dismiss();
 		}
+	}
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+		final float percent = (float) progress / (float) seekBar.getMax();
+		final int strokeWidth = Math.round(maxStrokeWidth * percent);
+		final BrushTipView colorPickerView = (BrushTipView) findViewById(R.id.view_brushtip);
+		colorPickerView.setCenterRadius(strokeWidth / 2);
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
+		final int strokeWidth = Math.round(maxStrokeWidth * percent);
+		brushListener.strokeChanged(strokeWidth);
 	}
 }

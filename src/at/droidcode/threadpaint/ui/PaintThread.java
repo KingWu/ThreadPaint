@@ -137,16 +137,16 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	@Override
-	public void strokeChanged(int width) {
+	public void capChanged(Cap cap) {
 		synchronized (lock) {
-			pathPaint.setStrokeWidth(width);
+			pathPaint.setStrokeCap(cap);
 		}
 	}
 
 	@Override
-	public void capChanged(Cap cap) {
+	public void strokeChanged(int width) {
 		synchronized (lock) {
-			pathPaint.setStrokeCap(cap);
+			pathPaint.setStrokeWidth(width);
 		}
 	}
 
