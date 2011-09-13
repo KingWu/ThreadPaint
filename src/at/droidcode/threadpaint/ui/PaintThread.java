@@ -248,7 +248,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		synchronized (lock) {
 			final float cx = (x1 + x2) / 2;
 			final float cy = (y1 + y2) / 2;
-			pathToDraw.quadTo(cx, cy, x2, y2);
+			// pathToDraw.quadTo(cx, cy, x2, y2);
+			pathToDraw.quadTo(x1, y1, cx, cy);
 		}
 		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
 	}
