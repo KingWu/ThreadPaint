@@ -17,8 +17,6 @@
 package at.droidcode.threadpaint;
 
 import android.app.Application;
-import android.view.Display;
-import android.view.WindowManager;
 
 /**
  * This class is used to provide application global variables that need to be initialized on startup.
@@ -26,8 +24,7 @@ import android.view.WindowManager;
 public class TpApplication extends Application {
 	public static final String TAG = "THREADPAINT";
 
-	private static final int MAX_STROKE_WIDTH_DP_VERT = 150;
-	private static final int MAX_STROKE_WIDTH_DP_HORZ = 125;
+	private static final int MAX_STROKE_WIDTH_DP = 150;
 
 	private int maxStrokeWidthPx;
 
@@ -35,12 +32,7 @@ public class TpApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
-		final Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
-		if (display.getOrientation() == 0) {
-			maxStrokeWidthPx = Utils.dp2px(getApplicationContext(), MAX_STROKE_WIDTH_DP_VERT);
-		} else {
-			maxStrokeWidthPx = Utils.dp2px(getApplicationContext(), MAX_STROKE_WIDTH_DP_HORZ);
-		}
+		maxStrokeWidthPx = Utils.dp2px(getApplicationContext(), MAX_STROKE_WIDTH_DP);
 	}
 
 	/**

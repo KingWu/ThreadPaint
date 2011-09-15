@@ -62,14 +62,14 @@ public class ColorPickerDialog extends AlertDialog /* implements SeekBar.OnSeekB
 		colorButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				colorDialView.setGrayscale(false);
+				colorDialView.setGreyscale(false);
 			}
 		});
 		final Button greyButton = (Button) findViewById(R.id.btn_colorpicker_grey);
 		greyButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				colorDialView.setGrayscale(true);
+				colorDialView.setGreyscale(true);
 			}
 		});
 
@@ -83,6 +83,5 @@ public class ColorPickerDialog extends AlertDialog /* implements SeekBar.OnSeekB
 	public void show() {
 		super.show();
 		colorDialView.setCenterShape(paintView.getPathPaint().getStrokeCap());
-		colorDialView.setCenterRadius(Math.round(paintView.getPathPaint().getStrokeWidth() / 2));
 	}
 }

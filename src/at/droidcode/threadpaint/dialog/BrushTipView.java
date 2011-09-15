@@ -35,7 +35,6 @@ import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.Utils;
 
 public class BrushTipView extends View {
-	private final Context context;
 	private final int centerX;
 	private final int centerY;
 	private final int stdCenterRadius;
@@ -49,9 +48,7 @@ public class BrushTipView extends View {
 	public BrushTipView(Context c, AttributeSet attrs) {
 		super(c, attrs);
 
-		context = c;
-
-		final int maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
+		final int maxStrokeWidth = ((TpApplication) c.getApplicationContext()).maxStrokeWidth();
 
 		centerX = maxStrokeWidth - (maxStrokeWidth / 6);
 		centerY = centerX;
@@ -60,7 +57,7 @@ public class BrushTipView extends View {
 		centerShape = Cap.ROUND;
 
 		centerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		centerPaint.setStrokeWidth(Utils.dp2px(context, 5));
+		centerPaint.setStrokeWidth(Utils.dp2px(c, 5));
 
 		squareRect = new RectF();
 

@@ -42,7 +42,7 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 		}
 	}
 
-	private static final Map<String, ArrayList<PreferencesCallback>> activityDirectory = new Hashtable<String, ArrayList<PreferencesCallback>>();
+	private static final Map<String, ArrayList<PreferencesCallback>> ACTIVITY_DIRECTORY = new Hashtable<String, ArrayList<PreferencesCallback>>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -62,12 +62,12 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 	}
 
 	public static void addCallbackForPreference(PreferencesCallback c, Preference preference) {
-		if (activityDirectory.containsKey(preference.key())) {
-			activityDirectory.get(preference.key()).add(c);
+		if (ACTIVITY_DIRECTORY.containsKey(preference.key())) {
+			ACTIVITY_DIRECTORY.get(preference.key()).add(c);
 		} else {
 			final ArrayList<PreferencesCallback> list = new ArrayList<PreferencesCallback>(1);
 			list.add(c);
-			activityDirectory.put(preference.key(), list);
+			ACTIVITY_DIRECTORY.put(preference.key(), list);
 		}
 	}
 
@@ -78,7 +78,7 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 	public static boolean removeCallback(PreferencesCallback c) {
 		boolean result = false;
 		for (Preference p : Preference.values()) {
-			ArrayList<PreferencesCallback> list = activityDirectory.get(p);
+			ArrayList<PreferencesCallback> list = ACTIVITY_DIRECTORY.get(p);
 			if (list != null) {
 				list.remove(c);
 			}
@@ -88,7 +88,7 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-		ArrayList<PreferencesCallback> callbacks = activityDirectory.get(key);
+		ArrayList<PreferencesCallback> callbacks = ACTIVITY_DIRECTORY.get(key);
 		if (callbacks != null) {
 			for (int i = 0; i < callbacks.size(); i++) {
 				callbacks.get(i).preferenceChanged(sharedPreferences, key);

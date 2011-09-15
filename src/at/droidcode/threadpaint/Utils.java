@@ -19,7 +19,7 @@ import android.view.Surface;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-public class Utils {
+public final class Utils {
 	private Utils() {
 	}
 

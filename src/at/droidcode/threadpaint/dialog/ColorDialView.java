@@ -21,7 +21,6 @@
 
 package at.droidcode.threadpaint.dialog;
 
-import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -31,7 +30,6 @@ import android.graphics.Paint.Cap;
 import android.graphics.RectF;
 import android.graphics.SweepGradient;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import at.droidcode.threadpaint.R;
@@ -46,11 +44,11 @@ public class ColorDialView extends View {
 	private final Context context;
 	private final int centerX;
 	private final int centerY;
-	private final int stdCenterRadius;
-	private int activeCenterRadius;
+	private final int centerRadius;
 	private Cap centerShape;
 	private final RectF ovalRect;
-	private final RectF squareRect;
+	private final RectF fullSquare;
+	private final RectF frameSquare;
 
 	private final Paint gradientPaint;
 	private final Paint centerPaint;
@@ -59,26 +57,32 @@ public class ColorDialView extends View {
 
 	public ColorDialView(Context c, AttributeSet attrs) {
 		super(c, attrs);
-
 		context = c;
 
 		final int maxStrokeWidth = ((TpApplication) context.getApplicationContext()).maxStrokeWidth();
-
-		centerX = maxStrokeWidth - (maxStrokeWidth / 6);
+		centerX = Math.round(maxStrokeWidth * 0.85f);
 		centerY = centerX;
-		stdCenterRadius = (maxStrokeWidth / 2) / 2;
-		activeCenterRadius = stdCenterRadius;
+		centerRadius = maxStrokeWidth / 2;
 		centerShape = Cap.ROUND;
 
+		int highlightWidth = Utils.dp2px(context, 5);
 		centerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		centerPaint.setStrokeWidth(Utils.dp2px(context, 5));
-
-		ovalRect = new RectF();
-		squareRect = new RectF();
+		centerPaint.setStrokeWidth(highlightWidth);
 
 		gradientPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		gradientPaint.setStyle(Paint.Style.STROKE);
+		gradientPaint.setStrokeWidth(centerRadius / 2);
 
-		setGrayscale(false);
+		float r = centerX - centerRadius * 0.25f;
+		ovalRect = new RectF(-r, -r, r, r);
+
+		r = Math.round(centerRadius * 0.8f);
+		fullSquare = new RectF(-r, -r, r, r);
+
+		r = Math.round(centerRadius * 0.8f) + highlightWidth;
+		frameSquare = new RectF(-r, -r, r, r);
+
+		setGreyscale(false);
 	}
 
 	/**
@@ -86,7 +90,7 @@ public class ColorDialView extends View {
 	 * 
 	 * @param b Greyscale if true, rgb colors if false
 	 */
-	final void setGrayscale(boolean b) {
+	final void setGreyscale(boolean b) {
 		final TypedArray colorArray;
 		if (b) {
 			colorArray = context.getResources().obtainTypedArray(R.array.grey_spectrum);
@@ -103,9 +107,7 @@ public class ColorDialView extends View {
 		colorArray.recycle();
 
 		gradientPaint.setShader(new SweepGradient(0, 0, colorSpectrum, null));
-		gradientPaint.setStyle(Paint.Style.STROKE);
-		gradientPaint.setStrokeWidth(stdCenterRadius);
-		postInvalidate();
+		invalidate();
 	}
 
 	/**
@@ -126,16 +128,9 @@ public class ColorDialView extends View {
 		return centerPaint;
 	}
 
-	/**
-	 * @param radius Radius of the central circle, representing the stroke width.
-	 */
-	void setCenterRadius(int radius) {
-		activeCenterRadius = radius;
-		invalidate();
-	}
-
 	void setCenterShape(Cap cap) {
 		centerShape = cap;
+		invalidate();
 	}
 
 	private boolean trackingCenter;
@@ -143,32 +138,32 @@ public class ColorDialView extends View {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		float r = centerX - gradientPaint.getStrokeWidth() * 0.5f;
-		canvas.translate(centerX, centerX);
+		canvas.translate(centerX, centerY);
 
-		ovalRect.set(-r, -r, r, r);
+		// color spectrum gradient
 		canvas.drawOval(ovalRect, gradientPaint);
 
+		// central solid shape
 		if (centerShape == Cap.ROUND) {
-			canvas.drawCircle(0, 0, activeCenterRadius, centerPaint);
+			canvas.drawCircle(0, 0, centerRadius, centerPaint);
 		} else {
-			squareRect.set(-activeCenterRadius, -activeCenterRadius, activeCenterRadius, activeCenterRadius);
-			canvas.drawRect(squareRect, centerPaint);
+			canvas.drawRect(fullSquare, centerPaint);
 		}
 
+		// highlight for central solid shape
 		if (trackingCenter) {
-			int c = centerPaint.getColor();
 			centerPaint.setStyle(Paint.Style.STROKE);
 
-			if (highlightCenter) {
-				centerPaint.setAlpha(0xFF);
-			} else {
+			if (!highlightCenter) {
 				centerPaint.setAlpha(0x80);
 			}
-			canvas.drawCircle(0, 0, activeCenterRadius + centerPaint.getStrokeWidth(), centerPaint);
-
+			if (centerShape == Cap.ROUND) {
+				canvas.drawCircle(0, 0, centerRadius + centerPaint.getStrokeWidth(), centerPaint);
+			} else {
+				canvas.drawRect(frameSquare, centerPaint);
+			}
 			centerPaint.setStyle(Paint.Style.FILL);
-			centerPaint.setColor(c);
+			centerPaint.setAlpha(0xFF);
 		}
 	}
 
@@ -177,7 +172,7 @@ public class ColorDialView extends View {
 		setMeasuredDimension(centerX * 2, centerY * 2);
 	}
 
-	private int ave(int s, int d, float p) {
+	private static int ave(int s, int d, float p) {
 		return s + java.lang.Math.round(p * (d - s));
 	}
 
@@ -210,7 +205,7 @@ public class ColorDialView extends View {
 	public boolean onTouchEvent(MotionEvent event) {
 		float x = event.getX() - centerX;
 		float y = event.getY() - centerY;
-		boolean inCenter = java.lang.Math.sqrt(x * x + y * y) <= stdCenterRadius;
+		boolean inCenter = java.lang.Math.sqrt(x * x + y * y) <= centerRadius;
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
@@ -218,15 +213,10 @@ public class ColorDialView extends View {
 			if (inCenter) {
 				highlightCenter = true;
 				invalidate();
-				break;
 			}
+			break;
 		case MotionEvent.ACTION_MOVE:
-			if (trackingCenter) {
-				if (highlightCenter != inCenter) {
-					highlightCenter = inCenter;
-					invalidate();
-				}
-			} else {
+			if (!trackingCenter) {
 				float angle = (float) java.lang.Math.atan2(y, x);
 				// need to turn angle [-PI ... PI] into unit [0....1]
 				float unit = angle / (2 * PI);
@@ -236,18 +226,17 @@ public class ColorDialView extends View {
 				centerPaint.setColor(interpColor(colorSpectrum, unit));
 				invalidate();
 			}
+			if (highlightCenter != inCenter) {
+				highlightCenter = inCenter;
+				invalidate();
+			}
 			break;
 		case MotionEvent.ACTION_UP:
 			if (trackingCenter) {
 				if (inCenter) {
-					if (paintListener == null) {
-						Log.e(TAG, "Error: No OnPaintChangedListener listener set!");
-					} else {
-						paintListener.colorChanged(centerPaint.getColor());
-					}
+					paintListener.colorChanged(centerPaint.getColor());
 				}
 				trackingCenter = false; // so we draw w/o halo
-				invalidate();
 			}
 			break;
 		}

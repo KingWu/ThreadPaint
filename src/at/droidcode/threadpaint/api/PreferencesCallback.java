@@ -19,5 +19,5 @@ package at.droidcode.threadpaint.api;
 import android.content.SharedPreferences;
 
 public interface PreferencesCallback {
-	public void preferenceChanged(SharedPreferences preferences, String key);
+	void preferenceChanged(SharedPreferences preferences, String key);
 }
