@@ -18,18 +18,15 @@ package at.droidcode.threadpaint;
 
 import static at.droidcode.threadpaint.TpApplication.TAG;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -51,7 +48,7 @@ import at.droidcode.threadpaint.ui.PaintView;
 public class TpMainActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
 	private Activity thisActivity;
 	private PaintView paintView;
-	private ArrayList<View> toolButtons;
+	private List<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
 
@@ -102,7 +99,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_save:
-			saveBitmap(paintView.getBitmap());
+			saveBitmap(paintView.getBitmap(), "threadpaint.png");
 			return true;
 		case R.id.menu_clear:
 			paintView.fillWithBackgroundColor();
@@ -146,7 +143,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	 * @param views Views to animate
 	 * @param a Animation to use
 	 */
-	private void animateViews(ArrayList<View> views, Animation a) {
+	private void animateViews(List<View> views, Animation a) {
 		for (int i = 0; i < views.size(); i++) {
 			a.reset();
 			views.get(i).clearAnimation();
@@ -174,38 +171,8 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		brushPickerDialog.show();
 	}
 
-	private void saveBitmap(final Bitmap bitmap) {
-		final String FILENAME = "threadpaint.png";
-
-		Thread thread = new Thread() {
-			@Override
-			public void run() {
-				String state = Environment.getExternalStorageState();
-
-				if (Environment.MEDIA_MOUNTED.equals(state)) {
-					File file = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), FILENAME);
-					try {
-						FileOutputStream fos = new FileOutputStream(file);
-						bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
-
-						String[] paths = new String[] { file.getAbsolutePath() };
-						MediaScannerConnection.scanFile(thisActivity, paths, null, null);
-
-						thisActivity.runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								CharSequence text = getResources().getString(R.string.toast_save_success);
-								Toast.makeText(thisActivity, text, Toast.LENGTH_SHORT).show();
-							}
-						});
-					} catch (Exception e) {
-						Log.e(TAG, "ERROR writing " + file, e);
-					}
-				} else {
-					Log.w(TAG, "Cannot write to external storage!");
-				}
-			}
-		};
+	private void saveBitmap(final Bitmap bitmap, final String filename) {
+		Utils.SaveBitmapThread thread = new Utils.SaveBitmapThread(bitmap, filename, this);
 		thread.start();
 	}
 
