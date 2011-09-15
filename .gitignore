@@ -1,3 +1,5 @@
 bin/
 gen/
+.sonar/
+local.properties
 .DS_Store
