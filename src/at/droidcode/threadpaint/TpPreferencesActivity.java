@@ -18,6 +18,7 @@ package at.droidcode.threadpaint;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Map;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -41,7 +42,7 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 		}
 	}
 
-	private static final Hashtable<String, ArrayList<PreferencesCallback>> activityDirectory = new Hashtable<String, ArrayList<PreferencesCallback>>();
+	private static final Map<String, ArrayList<PreferencesCallback>> activityDirectory = new Hashtable<String, ArrayList<PreferencesCallback>>();
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

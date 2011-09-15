@@ -20,6 +20,9 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 public class Utils {
+	private Utils() {
+	}
+
 	public static int dp2px(Context context, int dp) {
 		final Resources r = context.getResources();
 		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
