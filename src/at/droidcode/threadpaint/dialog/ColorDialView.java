@@ -86,7 +86,7 @@ public class ColorDialView extends View {
 	 * 
 	 * @param b Greyscale if true, rgb colors if false
 	 */
-	void setGrayscale(boolean b) {
+	final void setGrayscale(boolean b) {
 		final TypedArray colorArray;
 		if (b) {
 			colorArray = context.getResources().obtainTypedArray(R.array.grey_spectrum);
