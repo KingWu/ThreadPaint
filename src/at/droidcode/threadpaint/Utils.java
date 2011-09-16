@@ -56,6 +56,7 @@ public final class Utils {
 		private final Bitmap bitmap;
 		private final String name;
 		private final Activity activity;
+		private static final int QUALITY = 90;
 
 		public SaveBitmapThread(Bitmap bitmap, String name, Activity activity) {
 			this.bitmap = bitmap;
@@ -71,7 +72,7 @@ public final class Utils {
 				File file = new File(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name);
 				try {
 					FileOutputStream fos = new FileOutputStream(file);
-					bitmap.compress(Bitmap.CompressFormat.PNG, 90, fos);
+					bitmap.compress(Bitmap.CompressFormat.PNG, QUALITY, fos);
 
 					String[] paths = new String[] { file.getAbsolutePath() };
 					MediaScannerConnection.scanFile(activity, paths, null, null);

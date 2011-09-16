@@ -45,9 +45,9 @@ public class ColorDialView extends ShapeView {
 
 		gradientPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		gradientPaint.setStyle(Paint.Style.STROKE);
-		gradientPaint.setStrokeWidth(shapeRadius / 2);
+		gradientPaint.setStrokeWidth(getShapeRadius() / 2);
 
-		float r = centerX - (shapeRadius * 0.25f);
+		float r = getCenterX() - (gradientPaint.getStrokeWidth() / 2);
 		ovalRect = new RectF(-r, -r, r, r);
 
 		setGreyscale(false);
@@ -62,11 +62,11 @@ public class ColorDialView extends ShapeView {
 		final TypedArray colorArray;
 		if (b) {
 			colorArray = getContext().getResources().obtainTypedArray(R.array.grey_spectrum);
-			shapePaint.setColor(Color.WHITE);
+			setShapeColor(Color.WHITE);
 		} else {
 			colorArray = getContext().getResources().obtainTypedArray(R.array.color_spectrum);
 			final int color = getContext().getResources().getColor(R.color.stroke_standard);
-			shapePaint.setColor(color);
+			setShapeColor(color);
 		}
 		colorSpectrum = new int[colorArray.length()];
 		for (int i = 0; i < colorArray.length(); i++) {
@@ -116,7 +116,7 @@ public class ColorDialView extends ShapeView {
 
 	@Override
 	protected void handleMotionEvent(int action, float x, float y) {
-		if (action == MotionEvent.ACTION_MOVE && !trackingCenter) {
+		if (action == MotionEvent.ACTION_MOVE && !trackingCenter()) {
 			float angle = (float) java.lang.Math.atan2(y, x);
 			// need to turn angle [-PI ... PI] into unit [0....1]
 			float unit = angle / (2 * PI);

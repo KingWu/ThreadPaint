@@ -38,18 +38,18 @@ public abstract class ShapeView extends View {
 		void onShapeClicked();
 	}
 
-	protected final int centerX;
+	private final int centerX;
 
-	protected float shapeDiameter;
-	protected float shapeRadius;
+	private float shapeDiameter;
+	private float shapeRadius;
 
 	private final RectF rectFull;
 	private final RectF rectFrame;
 
-	protected final Paint shapePaint;
+	private final Paint shapePaint;
 	private Shape shape;
 
-	protected boolean trackingCenter;
+	private boolean trackingCenter;
 	private boolean highlightCenter;
 
 	private final int indicatorFrameWidth;
@@ -78,6 +78,18 @@ public abstract class ShapeView extends View {
 		rectFull = new RectF(-r, -r, r, r);
 		r += indicatorFrameWidth;
 		rectFrame = new RectF(-r, -r, r, r);
+	}
+
+	final int getCenterX() {
+		return centerX;
+	}
+
+	final float getShapeRadius() {
+		return shapeRadius;
+	}
+
+	final boolean trackingCenter() {
+		return trackingCenter;
 	}
 
 	final void setShapeClickedListener(ShapeClickedListener l) {
@@ -122,6 +134,9 @@ public abstract class ShapeView extends View {
 		return shapePaint;
 	}
 
+	private static final int FULL = 0xFF;
+	private static final int DIMMED = 0x88;
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		canvas.translate(centerX, centerX);
@@ -138,7 +153,7 @@ public abstract class ShapeView extends View {
 			shapePaint.setStyle(Paint.Style.STROKE);
 
 			if (!highlightCenter) {
-				shapePaint.setAlpha(0x80);
+				shapePaint.setAlpha(DIMMED);
 			}
 			if (shape == Shape.RECT) {
 				canvas.drawRect(rectFrame, shapePaint);
@@ -147,7 +162,7 @@ public abstract class ShapeView extends View {
 			}
 			// reset the paint for solid shape
 			shapePaint.setStyle(Paint.Style.FILL);
-			shapePaint.setAlpha(0xFF);
+			shapePaint.setAlpha(FULL);
 		}
 	}
 
@@ -178,10 +193,8 @@ public abstract class ShapeView extends View {
 			}
 			break;
 		case MotionEvent.ACTION_UP:
-			if (trackingCenter && inCenter) {
-				if (shapeClickedListener != null) {
-					shapeClickedListener.onShapeClicked();
-				}
+			if (trackingCenter && inCenter && shapeClickedListener != null) {
+				shapeClickedListener.onShapeClicked();
 			}
 			trackingCenter = false;
 			break;
