@@ -24,7 +24,7 @@ import android.app.Application;
 public class TpApplication extends Application {
 	public static final String TAG = "THREADPAINT";
 
-	private static final int MAX_STROKE_WIDTH_DP = 150;
+	private static final int MAX_STROKE_WIDTH_DP = 200;
 
 	private int maxStrokeWidthPx;
 

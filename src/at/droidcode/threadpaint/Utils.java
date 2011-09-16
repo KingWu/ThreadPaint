@@ -29,6 +29,10 @@ public final class Utils {
 		return Math.round(px);
 	}
 
+	public static int sreenWidthPx(Context context, float percent) {
+		return Math.round(context.getResources().getDisplayMetrics().widthPixels * percent);
+	}
+
 	public static void lockScreenOrientation(boolean lock, Activity activity) {
 		int screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 		if (lock) {

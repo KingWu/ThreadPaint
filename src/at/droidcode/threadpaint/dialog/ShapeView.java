@@ -38,18 +38,18 @@ public abstract class ShapeView extends View {
 		void onShapeClicked();
 	}
 
-	private final int centerX;
+	protected final int centerX;
 
-	private float shapeDiameter;
-	private float shapeRadius;
+	protected float shapeDiameter;
+	protected float shapeRadius;
 
 	private final RectF rectFull;
 	private final RectF rectFrame;
 
-	private final Paint shapePaint;
+	protected final Paint shapePaint;
 	private Shape shape;
 
-	private boolean trackingCenter;
+	protected boolean trackingCenter;
 	private boolean highlightCenter;
 
 	private final int indicatorFrameWidth;
@@ -60,15 +60,15 @@ public abstract class ShapeView extends View {
 		CIRCLE, RECT
 	};
 
-	ShapeView(Context c, AttributeSet attrs) {
+	protected ShapeView(Context c, AttributeSet attrs) {
 		super(c, attrs);
 
 		shape = Shape.CIRCLE;
 
-		shapeDiameter = 100f;
+		shapeDiameter = Utils.dp2px(c, 100);
 		shapeRadius = shapeDiameter / 2f;
 
-		centerX = (int) (shapeDiameter * 1.5);
+		centerX = Utils.sreenWidthPx(c, 0.75f) / 2;
 
 		indicatorFrameWidth = Utils.dp2px(c, 5);
 		shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -114,6 +114,10 @@ public abstract class ShapeView extends View {
 		invalidate();
 	}
 
+	final int getShapeColor() {
+		return shapePaint.getColor();
+	}
+
 	final Paint getShapePaint() {
 		return shapePaint;
 	}
@@ -153,7 +157,7 @@ public abstract class ShapeView extends View {
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent event) {
+	public final boolean onTouchEvent(MotionEvent event) {
 		final int action = event.getAction();
 		final float x = event.getX() - centerX;
 		final float y = event.getY() - centerX;
@@ -182,8 +186,9 @@ public abstract class ShapeView extends View {
 			trackingCenter = false;
 			break;
 		}
-		return handleMotionEvent(action, x, y);
+		handleMotionEvent(action, x, y);
+		return true;
 	}
 
-	protected abstract boolean handleMotionEvent(int action, float x, float y);
+	protected abstract void handleMotionEvent(int action, float x, float y);
 }

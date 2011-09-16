@@ -31,8 +31,7 @@ public class BrushTipView extends ShapeView {
 	}
 
 	@Override
-	protected boolean handleMotionEvent(int action, float x, float y) {
+	protected void handleMotionEvent(int action, float x, float y) {
 		// nothing to do
-		return true;
 	}
 }
