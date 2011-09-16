@@ -813,7 +813,7 @@
 
     <target name="help">
         <!-- displays starts at col 13
-              |13                                                              80| -->
+           |13                                                              80| -->
         <echo>Android Ant Build. Available targets:</echo>
         <echo>   help:      Displays this help.</echo>
         <echo>   clean:     Removes output files created by other targets.</echo>
@@ -827,5 +827,7 @@
         <echo>              signatures must match.</echo>
         <echo>   uninstall: Uninstalls the application from a running emulator or</echo>
         <echo>              device.</echo>
+        <echo>   sonar:     Analyzes the project with the Sonar service (needs to</echo>
+        <echo>              be running).</echo>
     </target>
 </project>
