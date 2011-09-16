@@ -7,11 +7,15 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.TpApplication;
+import at.droidcode.threadpaint.dialog.ShapeView.Shape;
+import at.droidcode.threadpaint.dialog.ShapeView.ShapeClickedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
-public class BrushPickerDialog extends AlertDialog implements View.OnClickListener, SeekBar.OnSeekBarChangeListener {
+public class BrushPickerDialog extends AlertDialog implements View.OnClickListener, OnSeekBarChangeListener,
+		ShapeClickedListener {
 	public interface OnBrushChangedListener {
 		void capChanged(Cap cap);
 
@@ -36,7 +40,9 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 		setContentView(R.layout.dialog_brushpicker);
 
 		brushTipView = (BrushTipView) findViewById(R.id.view_brushtip);
-		brushTipView.setParentDialog(this);
+		brushTipView.setShapeClickedListener(this);
+		int x = ((TpApplication) getContext().getApplicationContext()).maxStrokeWidth();
+		brushTipView.setShapeDiameter(x / 2f);
 
 		final Button round = (Button) findViewById(R.id.btn_cap_round);
 		round.setOnClickListener(this);
@@ -50,7 +56,7 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 	@Override
 	public void show() {
 		super.show();
-		brushTipView.setCenterColor(paintView.getPathPaint().getColor());
+		brushTipView.setShapeColor(paintView.getPathPaint().getColor());
 	}
 
 	@Override
@@ -58,11 +64,11 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 		switch (v.getId()) {
 		case R.id.btn_cap_round:
 			brushListener.capChanged(Cap.ROUND);
-			brushTipView.setCenterShape(Cap.ROUND);
+			brushTipView.setShape(Shape.CIRCLE);
 			break;
 		case R.id.btn_cap_squared:
 			brushListener.capChanged(Cap.SQUARE);
-			brushTipView.setCenterShape(Cap.SQUARE);
+			brushTipView.setShape(Shape.RECT);
 			break;
 		default:
 			dismiss();
@@ -74,7 +80,7 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 		final float percent = (float) progress / (float) seekBar.getMax();
 		final int strokeWidth = Math.round(maxStrokeWidth * percent);
 		final BrushTipView colorPickerView = (BrushTipView) findViewById(R.id.view_brushtip);
-		colorPickerView.setCenterRadius(strokeWidth / 2);
+		colorPickerView.setShapeRadius(strokeWidth / 2);
 	}
 
 	@Override
@@ -86,5 +92,10 @@ public class BrushPickerDialog extends AlertDialog implements View.OnClickListen
 		final float percent = (float) seekBar.getProgress() / (float) seekBar.getMax();
 		final int strokeWidth = Math.round(maxStrokeWidth * percent);
 		brushListener.strokeChanged(strokeWidth);
+	}
+
+	@Override
+	public void onShapeClicked() {
+		dismiss();
 	}
 }

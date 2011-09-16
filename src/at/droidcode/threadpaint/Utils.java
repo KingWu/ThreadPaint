@@ -24,8 +24,8 @@ public final class Utils {
 	}
 
 	public static int dp2px(Context context, int dp) {
-		final Resources r = context.getResources();
-		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics());
+		final Resources res = context.getResources();
+		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, res.getDisplayMetrics());
 		return Math.round(px);
 	}
 
