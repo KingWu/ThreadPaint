@@ -118,6 +118,14 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		workingBitmap = null;
 	}
 
+	private boolean drawBitmap = false;
+
+	void drawBitmap() {
+		synchronized (lock) {
+			drawBitmap = true;
+		}
+	}
+
 	/**
 	 * Draws the path onto a canvas which is then drawn onto the canvas of the SurfaceView.
 	 * 
@@ -125,8 +133,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	private void doDraw(Canvas canvas) {
 		canvas.drawPaint(checkeredPattern);
-		workingCanvas.drawPath(pathToDraw, pathPaint);
+		if (drawBitmap) {
+			workingCanvas.drawPath(pathToDraw, pathPaint);
+			pathToDraw.rewind();
+			drawBitmap = false;
+		}
 		canvas.drawBitmap(workingBitmap, rectSurface, rectSurface, null);
+		canvas.drawPath(pathToDraw, pathPaint);
 	}
 
 	@Override
