@@ -123,7 +123,7 @@ public class ColorDialView extends ShapeView {
 			if (unit < 0) {
 				unit += 1;
 			}
-			super.setShapeColor(interpColor(unit));
+			setShapeColor(interpColor(unit));
 			invalidate();
 		}
 	}

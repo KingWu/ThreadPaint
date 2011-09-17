@@ -39,6 +39,13 @@
   <at.droidcode.threadpaint.dialog.ColorDialView
   	android:id="@+id/view_colordial"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"/>
+    android:layout_height="fill_parent"
+    android:layout_marginBottom="10dp"/>
+    
+  <SeekBar android:id="@+id/seekbar_color_alpha"
+  	android:layout_width="fill_parent"
+  	android:layout_height="wrap_content"
+  	android:max="100"
+  	android:progress="100"/>
         
 </LinearLayout>

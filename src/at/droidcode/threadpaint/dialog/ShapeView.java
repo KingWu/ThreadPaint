@@ -24,6 +24,7 @@ package at.droidcode.threadpaint.dialog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -47,6 +48,7 @@ public abstract class ShapeView extends View {
 	private final RectF rectFrame;
 
 	private final Paint shapePaint;
+	private final Paint framePaint;
 	private Shape shape;
 
 	private boolean trackingCenter;
@@ -72,7 +74,9 @@ public abstract class ShapeView extends View {
 
 		indicatorFrameWidth = Utils.dp2px(c, 5);
 		shapePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-		shapePaint.setStrokeWidth(indicatorFrameWidth);
+		framePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		framePaint.setStrokeWidth(indicatorFrameWidth);
+		framePaint.setStyle(Style.STROKE);
 
 		float r = Math.round(shapeRadius * 0.8f);
 		rectFull = new RectF(-r, -r, r, r);
@@ -121,17 +125,25 @@ public abstract class ShapeView extends View {
 		invalidate();
 	}
 
+	/**
+	 * @param a [0..255]
+	 */
+	final void setShapeColorAlpha(int alpha) {
+		shapePaint.setAlpha(alpha);
+		invalidate();
+	}
+
 	final void setShapeColor(int color) {
+		int alpha = shapePaint.getAlpha(); // save alpha value
 		shapePaint.setColor(color);
+		shapePaint.setAlpha(alpha); // restore alpha value
+		framePaint.setColor(color);
+		framePaint.setAlpha(FULL);
 		invalidate();
 	}
 
 	final int getShapeColor() {
 		return shapePaint.getColor();
-	}
-
-	final Paint getShapePaint() {
-		return shapePaint;
 	}
 
 	private static final int FULL = 0xFF;
@@ -150,19 +162,16 @@ public abstract class ShapeView extends View {
 
 		// indicator frame for central shape
 		if (trackingCenter) {
-			shapePaint.setStyle(Paint.Style.STROKE);
-
 			if (!highlightCenter) {
-				shapePaint.setAlpha(DIMMED);
+				framePaint.setAlpha(DIMMED);
+			} else {
+				framePaint.setAlpha(FULL);
 			}
 			if (shape == Shape.RECT) {
-				canvas.drawRect(rectFrame, shapePaint);
+				canvas.drawRect(rectFrame, framePaint);
 			} else {
-				canvas.drawCircle(0, 0, shapeRadius + shapePaint.getStrokeWidth(), shapePaint);
+				canvas.drawCircle(0, 0, shapeRadius + framePaint.getStrokeWidth(), framePaint);
 			}
-			// reset the paint for solid shape
-			shapePaint.setStyle(Paint.Style.FILL);
-			shapePaint.setAlpha(FULL);
 		}
 	}
 

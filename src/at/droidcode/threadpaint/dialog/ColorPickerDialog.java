@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.graphics.Paint.Cap;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -75,6 +76,9 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 
 		final int color = getContext().getResources().getColor(R.color.stroke_standard);
 		colorDialView.setShapeColor(color);
+
+		final SeekBar alphaSeekBar = (SeekBar) findViewById(R.id.seekbar_color_alpha);
+		alphaSeekBar.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
@@ -89,14 +93,14 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 
 	@Override
 	public void onShapeClicked() {
+		Log.d(TpApplication.TAG, "onShapeClicked " + Integer.toHexString(colorDialView.getShapeColor()));
 		paintListener.colorChanged(colorDialView.getShapeColor());
 		dismiss();
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-		// TODO Auto-generated method stub
-
+		colorDialView.setShapeColorAlpha(Math.round(255 * (progress / 100f)));
 	}
 
 	@Override

@@ -57,7 +57,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		paintThread = new PaintThread(this, bitmap);
 		paintThread.setDaemon(true);
-		// paintThread.clearCanvas();
 	}
 
 	@Override
