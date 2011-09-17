@@ -29,6 +29,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.graphics.Xfermode;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import at.droidcode.threadpaint.R;
@@ -47,38 +48,45 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private volatile boolean isPaused;
 
 	private volatile Path pathToDraw;
-	private Bitmap workingBitmap;
-	private final Canvas workingCanvas;
+	private Bitmap drawingBitmap;
+	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
-	private final Paint pathPaint;
+	private final Paint bitmapPathPaint;
+	private final Paint canvasPathPaint;
 	private final Paint checkeredPattern;
 	private final Paint transparencyPaint;
+	private final Xfermode normalXfermode;
+	private final Xfermode eraseXfermode;
 
 	private final SurfaceHolder surfaceHolder;
 
 	public PaintThread(PaintView paintView, Bitmap bitmap) {
 		surfaceHolder = paintView.getHolder();
-		workingBitmap = bitmap;
+		drawingBitmap = bitmap;
 
 		keepRunning = false;
 		isPaused = false;
 		pathToDraw = new Path();
-		workingCanvas = new Canvas();
-		workingCanvas.setBitmap(workingBitmap);
+		bitmapCanvas = new Canvas();
+		bitmapCanvas.setBitmap(drawingBitmap);
 		rectSurface = new Rect();
+
+		normalXfermode = new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER);
+		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
 		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
 
-		pathPaint = new Paint();
-		pathPaint.setStyle(Paint.Style.STROKE);
-		pathPaint.setAntiAlias(true);
-		pathPaint.setDither(true);
 		final int color = appContext.getResources().getColor(R.color.stroke_standard);
-		pathPaint.setColor(color);
-		pathPaint.setStyle(Paint.Style.STROKE);
-		pathPaint.setStrokeJoin(Paint.Join.ROUND);
-		pathPaint.setStrokeCap(Paint.Cap.ROUND);
-		pathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
+		bitmapPathPaint = new Paint();
+		bitmapPathPaint.setColor(color);
+		bitmapPathPaint.setAntiAlias(true);
+		bitmapPathPaint.setDither(true);
+		bitmapPathPaint.setStyle(Paint.Style.STROKE);
+		bitmapPathPaint.setStrokeJoin(Paint.Join.ROUND);
+		bitmapPathPaint.setStrokeCap(Paint.Cap.ROUND);
+		bitmapPathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
+		bitmapPathPaint.setXfermode(normalXfermode);
+		canvasPathPaint = new Paint(bitmapPathPaint);
 
 		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.transparent);
 		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
@@ -87,7 +95,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 		transparencyPaint = new Paint();
 		transparencyPaint.setColor(Color.TRANSPARENT);
-		transparencyPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+		transparencyPaint.setXfermode(eraseXfermode);
 	}
 
 	@Override
@@ -114,8 +122,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 				}
 			}
 		}
-		workingBitmap.recycle();
-		workingBitmap = null;
+		drawingBitmap.recycle();
+		drawingBitmap = null;
 	}
 
 	private boolean drawBitmap = false;
@@ -134,32 +142,47 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private void doDraw(Canvas canvas) {
 		canvas.drawPaint(checkeredPattern);
 		if (drawBitmap) {
-			workingCanvas.drawPath(pathToDraw, pathPaint);
+			bitmapCanvas.drawPath(pathToDraw, bitmapPathPaint);
 			pathToDraw.rewind();
 			drawBitmap = false;
 		}
-		canvas.drawBitmap(workingBitmap, rectSurface, rectSurface, null);
-		canvas.drawPath(pathToDraw, pathPaint);
+		canvas.drawBitmap(drawingBitmap, rectSurface, rectSurface, null);
+		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
 
 	@Override
 	public void colorChanged(int color) {
 		synchronized (lock) {
-			pathPaint.setColor(color);
+			bitmapPathPaint.setColor(color);
+			canvasPathPaint.setColor(color);
+			if (Color.alpha(color) == 0x00) {
+				bitmapPathPaint.setXfermode(eraseXfermode);
+				canvasPathPaint.reset();
+				canvasPathPaint.setStyle(bitmapPathPaint.getStyle());
+				canvasPathPaint.setStrokeJoin(bitmapPathPaint.getStrokeJoin());
+				canvasPathPaint.setStrokeCap(bitmapPathPaint.getStrokeCap());
+				canvasPathPaint.setStrokeWidth(bitmapPathPaint.getStrokeWidth());
+				canvasPathPaint.setShader(checkeredPattern.getShader());
+			} else {
+				bitmapPathPaint.setXfermode(normalXfermode);
+				canvasPathPaint.set(bitmapPathPaint);
+			}
 		}
 	}
 
 	@Override
 	public void capChanged(Cap cap) {
 		synchronized (lock) {
-			pathPaint.setStrokeCap(cap);
+			bitmapPathPaint.setStrokeCap(cap);
+			canvasPathPaint.setStrokeCap(cap);
 		}
 	}
 
 	@Override
 	public void strokeChanged(int width) {
 		synchronized (lock) {
-			pathPaint.setStrokeWidth(width);
+			bitmapPathPaint.setStrokeWidth(width);
+			canvasPathPaint.setStrokeWidth(width);
 		}
 	}
 
@@ -172,8 +195,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void setSurfaceSize(int width, int height, Rect rect) {
 		synchronized (lock) {
-			workingBitmap = Bitmap.createScaledBitmap(workingBitmap, width, height, false);
-			workingCanvas.setBitmap(workingBitmap);
+			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
+			bitmapCanvas.setBitmap(drawingBitmap);
 			rectSurface.set(rect);
 		}
 	}
@@ -206,11 +229,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void setBitmap(Bitmap bitmap) {
 		synchronized (lock) {
-			if (workingBitmap != null) {
-				workingBitmap.recycle();
+			if (drawingBitmap != null) {
+				drawingBitmap.recycle();
 			}
-			workingBitmap = bitmap;
-			workingCanvas.setBitmap(workingBitmap);
+			drawingBitmap = bitmap;
+			bitmapCanvas.setBitmap(drawingBitmap);
 		}
 	}
 
@@ -218,7 +241,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @return Bitmap the thread draws onto the surface.
 	 */
 	Bitmap getBitmap() {
-		return workingBitmap;
+		return drawingBitmap;
 	}
 
 	/**
@@ -232,7 +255,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @return Paint the thread uses to draw a path.
 	 */
 	Paint getPaint() {
-		return pathPaint;
+		return bitmapPathPaint;
 	}
 
 	/**
@@ -276,7 +299,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	void drawPoint(float x, float y) {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			workingCanvas.drawPoint(x, y, pathPaint);
+			bitmapCanvas.drawPoint(x, y, bitmapPathPaint);
 		}
 		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
@@ -289,14 +312,14 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	void fillBackground(int color) {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			workingCanvas.drawColor(color);
+			bitmapCanvas.drawColor(color);
 		}
 	}
 
 	void clearCanvas() {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			workingCanvas.drawPaint(transparencyPaint);
+			bitmapCanvas.drawPaint(transparencyPaint);
 		}
 	}
 }

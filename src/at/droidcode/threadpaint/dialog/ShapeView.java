@@ -128,17 +128,17 @@ public abstract class ShapeView extends View {
 	/**
 	 * @param a [0..255]
 	 */
-	final void setShapeColorAlpha(int alpha) {
-		shapePaint.setAlpha(alpha);
+	void setShapeColorAlpha(int a) {
+		shapePaint.setAlpha(a);
 		invalidate();
 	}
 
 	final void setShapeColor(int color) {
-		int alpha = shapePaint.getAlpha(); // save alpha value
+		// int alpha = shapePaint.getAlpha(); // save alpha value
 		shapePaint.setColor(color);
-		shapePaint.setAlpha(alpha); // restore alpha value
+		// shapePaint.setAlpha(alpha); // restore alpha value
 		framePaint.setColor(color);
-		framePaint.setAlpha(FULL);
+		// framePaint.setAlpha(FULL);
 		invalidate();
 	}
 

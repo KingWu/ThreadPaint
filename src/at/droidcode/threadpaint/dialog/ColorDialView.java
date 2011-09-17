@@ -40,12 +40,15 @@ public class ColorDialView extends ShapeView {
 	private final Paint gradientPaint;
 	private int[] colorSpectrum;
 
+	private int alpha;
+
 	public ColorDialView(Context c, AttributeSet attrs) {
 		super(c, attrs);
 
 		gradientPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
 		gradientPaint.setStyle(Paint.Style.STROKE);
 		gradientPaint.setStrokeWidth(getShapeRadius() / 2);
+		alpha = 0xff;
 
 		float r = getCenterX() - (gradientPaint.getStrokeWidth() / 2);
 		ovalRect = new RectF(-r, -r, r, r);
@@ -78,6 +81,15 @@ public class ColorDialView extends ShapeView {
 		invalidate();
 	}
 
+	/**
+	 * @param a [0..255]
+	 */
+	@Override
+	final void setShapeColorAlpha(int a) {
+		alpha = a;
+		super.setShapeColorAlpha(a);
+	}
+
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
@@ -104,12 +116,12 @@ public class ColorDialView extends ShapeView {
 		// now p is just the fractional part [0...1) and i is the index
 		int c0 = colorSpectrum[i];
 		int c1 = colorSpectrum[i + 1];
-		int a = ave(Color.alpha(c0), Color.alpha(c1), p);
+		// int a = ave(Color.alpha(c0), Color.alpha(c1), p);
 		int r = ave(Color.red(c0), Color.red(c1), p);
 		int g = ave(Color.green(c0), Color.green(c1), p);
 		int b = ave(Color.blue(c0), Color.blue(c1), p);
 
-		return Color.argb(a, r, g, b);
+		return Color.argb(alpha, r, g, b);
 	}
 
 	private static final float PI = 3.1415926f;
