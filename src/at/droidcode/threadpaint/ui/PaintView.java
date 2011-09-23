@@ -241,7 +241,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			return true;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
-				paintThread.drawBitmap();
+				paintThread.bitmapNeedsUpdate();
 			} else {
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}

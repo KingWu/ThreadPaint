@@ -51,11 +51,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private Bitmap drawingBitmap;
 	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
-	private final Paint bitmapPathPaint;
-	private final Paint canvasPathPaint;
+	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
+	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
 	private final Paint transparencyPaint;
-	private final Xfermode normalXfermode;
 	private final Xfermode eraseXfermode;
 
 	private final SurfaceHolder surfaceHolder;
@@ -71,7 +70,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapCanvas.setBitmap(drawingBitmap);
 		rectSurface = new Rect();
 
-		normalXfermode = new PorterDuffXfermode(PorterDuff.Mode.SRC_OVER);
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
 		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
@@ -85,7 +83,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapPathPaint.setStrokeJoin(Paint.Join.ROUND);
 		bitmapPathPaint.setStrokeCap(Paint.Cap.ROUND);
 		bitmapPathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
-		bitmapPathPaint.setXfermode(normalXfermode);
 		canvasPathPaint = new Paint(bitmapPathPaint);
 
 		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.transparent);
@@ -126,25 +123,29 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		drawingBitmap = null;
 	}
 
-	private boolean drawBitmap = false;
+	private boolean bitmapNeedsUpdate = false;
 
-	void drawBitmap() {
+	/**
+	 * Causes the Thread to draw the pathToDraw onto the Bitmap during the next pass.
+	 */
+	void bitmapNeedsUpdate() {
 		synchronized (lock) {
-			drawBitmap = true;
+			bitmapNeedsUpdate = true;
 		}
 	}
 
 	/**
-	 * Draws the path onto a canvas which is then drawn onto the canvas of the SurfaceView.
+	 * After the checkered background pattern the finished Path is drawn onto the Bitmap if necessary. Then the Bitmap
+	 * and finally a still open Path are drawn onto the given Canvas.
 	 * 
-	 * @param canvas The Canvas onto which the Bitmap is drawn.
+	 * @param canvas External Canvas onto which the thread draws.
 	 */
 	private void doDraw(Canvas canvas) {
 		canvas.drawPaint(checkeredPattern);
-		if (drawBitmap) {
+		if (bitmapNeedsUpdate) {
 			bitmapCanvas.drawPath(pathToDraw, bitmapPathPaint);
 			pathToDraw.rewind();
-			drawBitmap = false;
+			bitmapNeedsUpdate = false;
 		}
 		canvas.drawBitmap(drawingBitmap, rectSurface, rectSurface, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
@@ -156,7 +157,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			bitmapPathPaint.setColor(color);
 			canvasPathPaint.setColor(color);
 			if (Color.alpha(color) == 0x00) {
+				// draw with transparency onto the bitmap
 				bitmapPathPaint.setXfermode(eraseXfermode);
+				// draw the checkered background pattern onto the canvas
 				canvasPathPaint.reset();
 				canvasPathPaint.setStyle(bitmapPathPaint.getStyle());
 				canvasPathPaint.setStrokeJoin(bitmapPathPaint.getStrokeJoin());
@@ -164,7 +167,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 				canvasPathPaint.setStrokeWidth(bitmapPathPaint.getStrokeWidth());
 				canvasPathPaint.setShader(checkeredPattern.getShader());
 			} else {
-				bitmapPathPaint.setXfermode(normalXfermode);
+				bitmapPathPaint.setXfermode(null);
 				canvasPathPaint.set(bitmapPathPaint);
 			}
 		}
@@ -252,7 +255,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * @return Paint the thread uses to draw a path.
+	 * @return Paint the thread uses to draw a path onto the Bitmap.
 	 */
 	Paint getPaint() {
 		return bitmapPathPaint;
