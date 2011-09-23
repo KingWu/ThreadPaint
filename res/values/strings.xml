@@ -14,7 +14,7 @@
   limitations under the License. -->
 <resources>
     <string name="app_name">ThreadPaint</string>
-    <string name="default_filename">threadpaint</string>
+    <string name="default_filename">mypicture</string>
     <string name="menu_save">Save</string>
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
