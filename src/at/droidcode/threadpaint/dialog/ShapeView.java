@@ -22,13 +22,18 @@
 package at.droidcode.threadpaint.dialog;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.Utils;
 
 /**
@@ -49,6 +54,7 @@ public abstract class ShapeView extends View {
 
 	private final Paint shapePaint;
 	private final Paint framePaint;
+	private final Paint checkeredPattern;
 	private Shape shape;
 
 	private boolean trackingCenter;
@@ -82,6 +88,11 @@ public abstract class ShapeView extends View {
 		rectFull = new RectF(-r, -r, r, r);
 		r += indicatorFrameWidth;
 		rectFrame = new RectF(-r, -r, r, r);
+
+		Bitmap checkerboard = BitmapFactory.decodeResource(c.getResources(), R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		checkeredPattern = new Paint();
+		checkeredPattern.setShader(shader);
 	}
 
 	final int getCenterX() {
@@ -152,8 +163,10 @@ public abstract class ShapeView extends View {
 
 		// central shape
 		if (shape == Shape.RECT) {
+			canvas.drawRect(rectFull, checkeredPattern);
 			canvas.drawRect(rectFull, shapePaint);
 		} else {
+			canvas.drawCircle(0, 0, shapeRadius, checkeredPattern);
 			canvas.drawCircle(0, 0, shapeRadius, shapePaint);
 		}
 

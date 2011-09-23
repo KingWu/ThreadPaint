@@ -184,10 +184,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * Fill the Bitmap with the currently selected color.
+	 * Fill the Bitmap with the currently used paint (and color).
 	 */
-	public void fillWithSelectedColor() {
-		paintThread.fillBackgroundWithCurrentColor();
+	public void fillWithPaint() {
+		paintThread.fillWithPaint();
 	}
 
 	/**

@@ -35,7 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.Toast;
 import at.droidcode.threadpaint.TpPreferencesActivity.Preference;
 import at.droidcode.threadpaint.api.PreferencesCallback;
@@ -54,10 +54,10 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
 
-	private ImageButton buttonColor;
-	private ImageButton buttonBrush;
-	private ImageButton buttonFill;
-	private ImageButton buttonErase;
+	private Button buttonColor;
+	private Button buttonBrush;
+	private Button buttonFill;
+	private Button buttonErase;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -68,10 +68,10 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
 
-		buttonColor = (ImageButton) findViewById(R.id.btn_color_picker);
-		buttonBrush = (ImageButton) findViewById(R.id.btn_brush_cap_picker);
-		buttonFill = (ImageButton) findViewById(R.id.btn_tool_fill);
-		buttonErase = (ImageButton) findViewById(R.id.btn_tool_erase);
+		buttonColor = (Button) findViewById(R.id.btn_color_picker);
+		buttonBrush = (Button) findViewById(R.id.btn_brush_cap_picker);
+		buttonFill = (Button) findViewById(R.id.btn_tool_fill);
+		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
 
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonFill, buttonErase);
@@ -134,7 +134,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			showBrushPickerDialog();
 			break;
 		case R.id.btn_tool_fill:
-			paintView.fillWithSelectedColor();
+			paintView.fillWithPaint();
 			break;
 		case R.id.btn_tool_erase:
 			paintView.setPaintColor(Color.TRANSPARENT);
