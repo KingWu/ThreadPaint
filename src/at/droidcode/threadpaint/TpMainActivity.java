@@ -26,6 +26,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.Toast;
 import at.droidcode.threadpaint.TpPreferencesActivity.Preference;
 import at.droidcode.threadpaint.api.PreferencesCallback;
@@ -52,6 +54,11 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	private ColorPickerDialog colorPickerDialog;
 	private BrushPickerDialog brushPickerDialog;
 
+	private ImageButton buttonColor;
+	private ImageButton buttonBrush;
+	private ImageButton buttonFill;
+	private ImageButton buttonErase;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -61,8 +68,13 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
 
+		buttonColor = (ImageButton) findViewById(R.id.btn_color_picker);
+		buttonBrush = (ImageButton) findViewById(R.id.btn_brush_cap_picker);
+		buttonFill = (ImageButton) findViewById(R.id.btn_tool_fill);
+		buttonErase = (ImageButton) findViewById(R.id.btn_tool_erase);
+
 		toolButtons = new ArrayList<View>();
-		Collections.addAll(toolButtons, findViewById(R.id.btn_color_picker), findViewById(R.id.btn_brush_cap_picker));
+		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonFill, buttonErase);
 
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
@@ -102,7 +114,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			saveBitmap(paintView.getBitmap(), "threadpaint.png");
 			return true;
 		case R.id.menu_clear:
-			paintView.fillWithBackgroundColor();
+			paintView.clearCanvas();
 			return true;
 		case R.id.menu_prefs:
 			Intent i = new Intent(this, TpPreferencesActivity.class);
@@ -120,6 +132,12 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			break;
 		case R.id.btn_brush_cap_picker:
 			showBrushPickerDialog();
+			break;
+		case R.id.btn_tool_fill:
+			paintView.fillWithSelectedColor();
+			break;
+		case R.id.btn_tool_erase:
+			paintView.setPaintColor(Color.TRANSPARENT);
 			break;
 		default:
 		}

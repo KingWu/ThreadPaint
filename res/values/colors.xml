@@ -15,4 +15,7 @@
 <resources>
     <color name="canvas_background">#FFCCCCCC</color>
     <color name="stroke_standard">#FFFF0000</color>
+    <color name="btn_tool_focused">#FF00FF00</color>
+    <color name="btn_tool_pressed">#FFFF0000</color>
+    <color name="btn_tool_normal">#00000000</color>
 </resources>

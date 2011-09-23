@@ -304,15 +304,25 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
 
+	// /**
+	// * Change the current background color and draw it over the whole Canvas (Bitmap).
+	// *
+	// * @param color Color to set as the new background color
+	// */
+	// void fillBackground(int color) {
+	// synchronized (lock) {
+	// pathToDraw.rewind();
+	// bitmapCanvas.drawColor(color);
+	// }
+	// }
+
 	/**
-	 * Change the current background color and draw it over the whole Canvas (Bitmap).
-	 * 
-	 * @param color Color to set as the new background color
+	 * Draw the currently selected color over the whole Canvas (Bitmap).
 	 */
-	void fillBackground(int color) {
+	void fillBackgroundWithCurrentColor() {
 		synchronized (lock) {
 			pathToDraw.rewind();
-			bitmapCanvas.drawColor(color);
+			bitmapCanvas.drawColor(bitmapPathPaint.getColor());
 		}
 	}
 

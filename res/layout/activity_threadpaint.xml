@@ -21,14 +21,24 @@
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"/>
     	
-    <Button android:id="@+id/btn_color_picker"
+    <ImageButton android:id="@+id/btn_color_picker"
     	style="@style/ToolButton"
     	android:layout_alignParentTop="true"
-    	android:text="@string/btn_color" />
+    	android:background="@drawable/ic_tool_color" />
     	
-    <Button android:id="@+id/btn_brush_cap_picker"
+    <ImageButton android:id="@+id/btn_brush_cap_picker"
     	style="@style/ToolButton"
     	android:layout_below="@id/btn_color_picker"
-    	android:text="@string/btn_brush" />
+    	android:background="@drawable/ic_tool_brush" />
+    	
+     <ImageButton android:id="@+id/btn_tool_fill"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_brush_cap_picker"
+    	android:background="@drawable/ic_tool_fill" />
+    	
+    <ImageButton android:id="@+id/btn_tool_erase"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_tool_fill"
+    	android:background="@drawable/ic_tool_erase" />
     	
 </RelativeLayout>

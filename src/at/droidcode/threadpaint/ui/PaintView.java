@@ -177,6 +177,27 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
+	 * @param color Color used to draw on the Bitmap.
+	 */
+	public void setPaintColor(int color) {
+		paintThread.colorChanged(color);
+	}
+
+	/**
+	 * Fill the Bitmap with the currently selected color.
+	 */
+	public void fillWithSelectedColor() {
+		paintThread.fillBackgroundWithCurrentColor();
+	}
+
+	/**
+	 * Fills the whole canvas with transparency.
+	 */
+	public void clearCanvas() {
+		paintThread.clearCanvas();
+	}
+
+	/**
 	 * @return OnPaintChangedListener, usually the PaintThread
 	 */
 	public OnPaintChangedListener getOnPaintChangedListener() {
@@ -188,13 +209,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 */
 	public OnBrushChangedListener getOnBrushChangedListener() {
 		return paintThread;
-	}
-
-	/**
-	 * Fills the whole Canvas with the current background color.
-	 */
-	public void fillWithBackgroundColor() {
-		paintThread.clearCanvas();
 	}
 
 	private float previousX;

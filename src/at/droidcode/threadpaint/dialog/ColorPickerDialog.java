@@ -18,6 +18,7 @@ package at.droidcode.threadpaint.dialog;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.os.Bundle;
 import android.util.Log;
@@ -84,7 +85,9 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 	@Override
 	public void show() {
 		super.show();
-		if (paintView.getPathPaint().getStrokeCap() == Cap.SQUARE) {
+		Paint pathPaint = paintView.getPathPaint();
+		colorDialView.setShapeColor(pathPaint.getColor());
+		if (pathPaint.getStrokeCap() == Cap.SQUARE) {
 			colorDialView.setShape(Shape.RECT);
 		} else {
 			colorDialView.setShape(Shape.CIRCLE);
