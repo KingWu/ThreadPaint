@@ -14,14 +14,20 @@
   limitations under the License. -->
 <resources>
     <string name="app_name">ThreadPaint</string>
+    <string name="default_filename">threadpaint</string>
     <string name="menu_save">Save</string>
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
     <string name="btn_color">Color</string>
     <string name="btn_grey">Grey</string>
-    <string name="btn_brush">Brush</string>
-    <string name="toast_save_success">Saved file successfully</string>
+    <string name="btn_save">Save</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="dialog_save">Please name your picture</string>
+    <string name="toast_save_success">File successfully saved</string>
     <string name="toast_float_parse_error">Error: value is not a flaot</string>
+    <string name="toast_filename_error">Filename cannot be empty!</string>
     <string name="pref_orientation">Lock Orientation</string>
     <string name="pref_movethreshold">Path Threshold</string>
+    <string name="pref_orientation_summary">Lock screen layout to the current orientation.</string>
+    <string name="pref_movethreshold_summary">Distance to drag finger before path is drawn.</string>
 </resources>

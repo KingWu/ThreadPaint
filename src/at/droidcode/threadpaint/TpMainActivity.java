@@ -25,7 +25,7 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -42,13 +42,14 @@ import at.droidcode.threadpaint.api.PreferencesCallback;
 import at.droidcode.threadpaint.api.ToolButtonAnimator;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
+import at.droidcode.threadpaint.dialog.SaveFileDialog;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
  * This Activity houses a single PaintView. It handles dialogs and provides an options menu.
  */
 public class TpMainActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
-	private Activity thisActivity;
+	public static Activity instance;
 	private PaintView paintView;
 	private List<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
@@ -63,7 +64,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_threadpaint);
-		thisActivity = this;
+		instance = this;
 
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
@@ -111,7 +112,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_save:
-			saveBitmap(paintView.getBitmap(), "threadpaint.png");
+			showSaveDialog();
 			return true;
 		case R.id.menu_clear:
 			paintView.clearCanvas();
@@ -189,9 +190,9 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		brushPickerDialog.show();
 	}
 
-	private void saveBitmap(final Bitmap bitmap, final String filename) {
-		Utils.SaveBitmapThread thread = new Utils.SaveBitmapThread(bitmap, filename, this);
-		thread.start();
+	private void showSaveDialog() {
+		final SaveFileDialog dialog = new SaveFileDialog(this, paintView.getBitmap().copy(Config.ARGB_8888, false));
+		dialog.show();
 	}
 
 	@Override
@@ -207,7 +208,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			} catch (NumberFormatException e) {
 				Log.e(TAG, "ERROR ", e);
 				CharSequence text = getResources().getString(R.string.toast_float_parse_error);
-				Toast.makeText(thisActivity, text, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
 			}
 			Log.d(TAG, "setMoveThreshold " + Float.toString(f));
 			paintView.setMoveThreshold(f);

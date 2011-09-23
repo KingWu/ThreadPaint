@@ -55,13 +55,13 @@ public final class Utils {
 	public static class SaveBitmapThread extends Thread {
 		private final Bitmap bitmap;
 		private final String name;
-		private final Activity activity;
+		private final Context context;
 		private static final int QUALITY = 90;
 
-		public SaveBitmapThread(Bitmap bitmap, String name, Activity activity) {
+		public SaveBitmapThread(Bitmap bitmap, String name, Context activity) {
 			this.bitmap = bitmap;
-			this.name = name;
-			this.activity = activity;
+			this.name = name + ".png";
+			this.context = activity;
 		}
 
 		@Override
@@ -69,27 +69,31 @@ public final class Utils {
 			String state = Environment.getExternalStorageState();
 
 			if (Environment.MEDIA_MOUNTED.equals(state)) {
-				File file = new File(activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name);
+				File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name);
 				try {
-					FileOutputStream fos = new FileOutputStream(file);
-					bitmap.compress(Bitmap.CompressFormat.PNG, QUALITY, fos);
+					FileOutputStream fileOutputStream = new FileOutputStream(file);
+					boolean ok = bitmap.compress(Bitmap.CompressFormat.PNG, QUALITY, fileOutputStream);
 
 					String[] paths = new String[] { file.getAbsolutePath() };
-					MediaScannerConnection.scanFile(activity, paths, null, null);
+					MediaScannerConnection.scanFile(context, paths, null, null);
 
-					activity.runOnUiThread(new Runnable() {
+					TpMainActivity.instance.runOnUiThread(new Runnable() {
 						@Override
 						public void run() {
-							CharSequence text = activity.getResources().getString(R.string.toast_save_success);
-							Toast.makeText(activity, text, Toast.LENGTH_SHORT).show();
+							CharSequence text = context.getResources().getString(R.string.toast_save_success);
+							Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
 						}
 					});
+					if (ok) {
+						Log.w(TAG, file + " successfully saved!");
+					}
 				} catch (Exception e) {
 					Log.e(TAG, "ERROR writing " + file, e);
 				}
 			} else {
 				Log.w(TAG, "Cannot write to external storage!");
 			}
+			bitmap.recycle();
 		}
 	};
 }
