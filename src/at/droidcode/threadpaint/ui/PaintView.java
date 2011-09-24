@@ -89,6 +89,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		Log.w(TAG, "surfaceDestroyed");
 
 		if (paintThread != null) {
+			Log.d(TAG, "setPaused true");
 			paintThread.setPaused(true);
 		}
 	}
@@ -240,7 +241,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			return true;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
-				paintThread.bitmapNeedsUpdate();
+				paintThread.drawPathOnBitmap();
 			} else {
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}

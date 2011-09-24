@@ -124,15 +124,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		drawingBitmap = null;
 	}
 
-	private boolean bitmapNeedsUpdate = false;
+	private boolean drawPathOnBitmap = false;
 
 	/**
-	 * Causes the Thread to draw the pathToDraw onto the Bitmap during the next pass.
+	 * Causes the Thread to draw the pathToDraw onto the Bitmap instead of the Canvas during the next pass.
 	 */
-	void bitmapNeedsUpdate() {
-		synchronized (lock) {
-			bitmapNeedsUpdate = true;
-		}
+	void drawPathOnBitmap() {
+		drawPathOnBitmap = true;
 	}
 
 	/**
@@ -143,10 +141,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	private void doDraw(Canvas canvas) {
 		canvas.drawPaint(checkeredPattern);
-		if (bitmapNeedsUpdate) {
+		if (drawPathOnBitmap) {
 			bitmapCanvas.drawPath(pathToDraw, bitmapPathPaint);
 			pathToDraw.rewind();
-			bitmapNeedsUpdate = false;
+			drawPathOnBitmap = false;
 		}
 		canvas.drawBitmap(drawingBitmap, rectSurface, rectSurface, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
@@ -154,40 +152,34 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	@Override
 	public void colorChanged(int color) {
-		synchronized (lock) {
-			bitmapPathPaint.setColor(color);
-			canvasPathPaint.setColor(color);
-			if (Color.alpha(color) == 0x00) {
-				// draw with transparency onto the bitmap
-				bitmapPathPaint.setXfermode(eraseXfermode);
-				// draw the checkered background pattern onto the canvas
-				canvasPathPaint.reset();
-				canvasPathPaint.setStyle(bitmapPathPaint.getStyle());
-				canvasPathPaint.setStrokeJoin(bitmapPathPaint.getStrokeJoin());
-				canvasPathPaint.setStrokeCap(bitmapPathPaint.getStrokeCap());
-				canvasPathPaint.setStrokeWidth(bitmapPathPaint.getStrokeWidth());
-				canvasPathPaint.setShader(checkeredPattern.getShader());
-			} else {
-				bitmapPathPaint.setXfermode(null);
-				canvasPathPaint.set(bitmapPathPaint);
-			}
+		bitmapPathPaint.setColor(color);
+		canvasPathPaint.setColor(color);
+		if (Color.alpha(color) == 0x00) {
+			// draw with transparency onto the bitmap
+			bitmapPathPaint.setXfermode(eraseXfermode);
+			// draw the checkered background pattern onto the canvas
+			canvasPathPaint.reset();
+			canvasPathPaint.setStyle(bitmapPathPaint.getStyle());
+			canvasPathPaint.setStrokeJoin(bitmapPathPaint.getStrokeJoin());
+			canvasPathPaint.setStrokeCap(bitmapPathPaint.getStrokeCap());
+			canvasPathPaint.setStrokeWidth(bitmapPathPaint.getStrokeWidth());
+			canvasPathPaint.setShader(checkeredPattern.getShader());
+		} else {
+			bitmapPathPaint.setXfermode(null);
+			canvasPathPaint.set(bitmapPathPaint);
 		}
 	}
 
 	@Override
 	public void capChanged(Cap cap) {
-		synchronized (lock) {
-			bitmapPathPaint.setStrokeCap(cap);
-			canvasPathPaint.setStrokeCap(cap);
-		}
+		bitmapPathPaint.setStrokeCap(cap);
+		canvasPathPaint.setStrokeCap(cap);
 	}
 
 	@Override
 	public void strokeChanged(int width) {
-		synchronized (lock) {
-			bitmapPathPaint.setStrokeWidth(width);
-			canvasPathPaint.setStrokeWidth(width);
-		}
+		bitmapPathPaint.setStrokeWidth(width);
+		canvasPathPaint.setStrokeWidth(width);
 	}
 
 	/**
@@ -269,10 +261,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate on the Bitmap.
 	 */
 	void startPath(float x, float y) {
-		// synchronized (lock) {
 		pathToDraw.rewind();
 		pathToDraw.moveTo(x, y);
-		// }
 		Log.d(TAG, "start path x: " + x + " y: " + y);
 	}
 
@@ -285,12 +275,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		// synchronized (lock) {
 		final float cx = (x1 + x2) / 2;
 		final float cy = (y1 + y2) / 2;
 		// pathToDraw.quadTo(cx, cy, x2, y2);
 		pathToDraw.quadTo(x1, y1, cx, cy);
-		// }
 		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
 	}
 
@@ -301,10 +289,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		// synchronized (lock) {
-		// pathToDraw.rewind();
 		bitmapCanvas.drawPoint(x, y, bitmapPathPaint);
-		// }
 		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
 
@@ -312,16 +297,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * Draw the currently used paint over the whole Canvas (Bitmap).
 	 */
 	void fillWithPaint() {
-		// synchronized (lock) {
-		// pathToDraw.rewind();
 		bitmapCanvas.drawPaint(bitmapPathPaint);
-		// }
 	}
 
+	/**
+	 * Draw the transparency paint over the whole Canvas (Bitmap).
+	 */
 	void clearCanvas() {
-		// synchronized (lock) {
-		// pathToDraw.rewind();
 		bitmapCanvas.drawPaint(transparencyPaint);
-		// }
 	}
 }
