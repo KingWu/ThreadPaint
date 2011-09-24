@@ -18,6 +18,7 @@ package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -241,10 +242,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * @return Bitmap the thread draws onto the surface.
+	 * @return Copy of Bitmap the thread uses.
 	 */
 	Bitmap getBitmap() {
-		return drawingBitmap;
+		return drawingBitmap.copy(Config.ARGB_8888, false);
 	}
 
 	/**
@@ -268,10 +269,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate on the Bitmap.
 	 */
 	void startPath(float x, float y) {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			pathToDraw.moveTo(x, y);
-		}
+		// synchronized (lock) {
+		pathToDraw.rewind();
+		pathToDraw.moveTo(x, y);
+		// }
 		Log.d(TAG, "start path x: " + x + " y: " + y);
 	}
 
@@ -284,12 +285,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		synchronized (lock) {
-			final float cx = (x1 + x2) / 2;
-			final float cy = (y1 + y2) / 2;
-			// pathToDraw.quadTo(cx, cy, x2, y2);
-			pathToDraw.quadTo(x1, y1, cx, cy);
-		}
+		// synchronized (lock) {
+		final float cx = (x1 + x2) / 2;
+		final float cy = (y1 + y2) / 2;
+		// pathToDraw.quadTo(cx, cy, x2, y2);
+		pathToDraw.quadTo(x1, y1, cx, cy);
+		// }
 		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
 	}
 
@@ -300,10 +301,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			bitmapCanvas.drawPoint(x, y, bitmapPathPaint);
-		}
+		// synchronized (lock) {
+		// pathToDraw.rewind();
+		bitmapCanvas.drawPoint(x, y, bitmapPathPaint);
+		// }
 		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
 
@@ -311,16 +312,16 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * Draw the currently used paint over the whole Canvas (Bitmap).
 	 */
 	void fillWithPaint() {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			bitmapCanvas.drawPaint(bitmapPathPaint);
-		}
+		// synchronized (lock) {
+		// pathToDraw.rewind();
+		bitmapCanvas.drawPaint(bitmapPathPaint);
+		// }
 	}
 
 	void clearCanvas() {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			bitmapCanvas.drawPaint(transparencyPaint);
-		}
+		// synchronized (lock) {
+		// pathToDraw.rewind();
+		bitmapCanvas.drawPaint(transparencyPaint);
+		// }
 	}
 }

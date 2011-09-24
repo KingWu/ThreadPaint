@@ -99,8 +99,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * @param b Bundle to store attributes in
 	 */
 	public synchronized void saveState(Bundle b) {
-		Bitmap copy = getBitmap().copy(Bitmap.Config.ARGB_8888, true);
-		b.putParcelable(STATE_WORKING_BITMAP, copy);
+		b.putParcelable(STATE_WORKING_BITMAP, getBitmap());
 	}
 
 	/**
@@ -154,7 +153,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * @return Bitmap the PaintThread is drawing onto
+	 * @return Copy of the Bitmap the PaintThread is drawing onto
 	 */
 	public Bitmap getBitmap() {
 		return paintThread.getBitmap();

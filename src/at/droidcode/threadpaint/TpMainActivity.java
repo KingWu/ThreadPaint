@@ -25,7 +25,6 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap.Config;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -191,7 +190,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	}
 
 	private void showSaveDialog() {
-		final SaveFileDialog dialog = new SaveFileDialog(this, paintView.getBitmap().copy(Config.ARGB_8888, false));
+		final SaveFileDialog dialog = new SaveFileDialog(this, paintView.getBitmap());
 		dialog.show();
 	}
 
