@@ -18,7 +18,6 @@ package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -52,6 +51,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private Bitmap drawingBitmap;
 	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
+	private final Rect rectBitmap;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
@@ -70,6 +70,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapCanvas = new Canvas();
 		bitmapCanvas.setBitmap(drawingBitmap);
 		rectSurface = new Rect();
+		rectBitmap = new Rect();
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
@@ -146,7 +147,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			pathToDraw.rewind();
 			drawPathOnBitmap = false;
 		}
-		canvas.drawBitmap(drawingBitmap, rectSurface, rectSurface, null);
+		canvas.drawBitmap(drawingBitmap, rectBitmap, rectSurface, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
 
@@ -183,7 +184,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Called by the SurfaceView on surfaceChanged().
+	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap actually as big as the screen.
 	 * 
 	 * @param width Width of the SurfaceView.
 	 * @param height Height of the SurfaceView.
@@ -194,6 +195,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
 			bitmapCanvas.setBitmap(drawingBitmap);
 			rectSurface.set(rect);
+			rectBitmap.set(rect);
 		}
 	}
 
@@ -228,16 +230,18 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
+			// fit image into screen
+			// rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
 			drawingBitmap = bitmap;
 			bitmapCanvas.setBitmap(drawingBitmap);
 		}
 	}
 
 	/**
-	 * @return Copy of Bitmap the thread uses.
+	 * @return Actual Bitmap the thread uses, a copy might be too big.
 	 */
 	Bitmap getBitmap() {
-		return drawingBitmap.copy(Config.ARGB_8888, true);
+		return drawingBitmap;
 	}
 
 	/**

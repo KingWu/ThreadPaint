@@ -16,6 +16,7 @@
     <string name="app_name">ThreadPaint</string>
     <string name="default_filename">mypicture</string>
     <string name="menu_save">Save</string>
+    <string name="menu_load">Load</string>
     <string name="menu_clear">Clear</string>
     <string name="menu_prefs">Settings</string>
     <string name="btn_color">Color</string>
@@ -23,6 +24,7 @@
     <string name="btn_save">Save</string>
     <string name="btn_cancel">Cancel</string>
     <string name="dialog_save">Please name your picture</string>
+    <string name="dialog_load">Loading, please wait...</string>
     <string name="toast_media_not_mounted">Error, storage not available!</string>
     <string name="toast_save_success">File successfully saved</string>
     <string name="toast_float_parse_error">Error: value is not a flaot</string>

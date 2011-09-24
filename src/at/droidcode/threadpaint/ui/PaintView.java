@@ -217,6 +217,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
+		handleBrushTool(event);
+		return true;
+	}
+
+	private void handleBrushTool(MotionEvent event) {
 		float xTouchCoordinate = event.getX();
 		float yTouchCoordinate = event.getY();
 
@@ -230,7 +235,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
 			hasMoved = false;
-			return true;
+			break;
 		case MotionEvent.ACTION_MOVE:
 			if (dx > moveThreshold || dy > moveThreshold) {
 				hasMoved = true;
@@ -238,7 +243,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			}
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
-			return true;
+			break;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
 				paintThread.drawPathOnBitmap();
@@ -246,9 +251,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
 			toolButtonAnimator.fadeInToolButtons();
-			return true;
-		default:
-			return false;
+			break;
 		}
 	}
 }

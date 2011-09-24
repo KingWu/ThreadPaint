@@ -18,15 +18,21 @@ package at.droidcode.threadpaint;
 
 import static at.droidcode.threadpaint.TpApplication.TAG;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +55,9 @@ import at.droidcode.threadpaint.ui.PaintView;
  */
 public class TpMainActivity extends Activity implements ToolButtonAnimator, PreferencesCallback {
 	public static Activity instance;
+
+	private static final int REQ_LOAD = 1;
+
 	private PaintView paintView;
 	private List<View> toolButtons;
 	private ColorPickerDialog colorPickerDialog;
@@ -113,6 +122,11 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		case R.id.menu_save:
 			showSaveDialog();
 			return true;
+		case R.id.menu_load:
+			Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+			intent.setType("image/*");
+			startActivityForResult(intent, REQ_LOAD);
+			return true;
 		case R.id.menu_clear:
 			paintView.clearCanvas();
 			return true;
@@ -125,6 +139,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		}
 	}
 
+	// Declared in xml.
 	public void onToolButtonClicked(View button) {
 		switch (button.getId()) {
 		case R.id.btn_color_picker:
@@ -140,6 +155,37 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			paintView.setPaintColor(Color.TRANSPARENT);
 			break;
 		default:
+		}
+	}
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case REQ_LOAD:
+			if (resultCode == RESULT_OK) {
+				Uri imageUri = data.getData();
+				String[] filePathColumn = { MediaStore.Images.Media.DATA };
+
+				Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
+				cursor.moveToFirst();
+
+				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+				final String filePath = cursor.getString(columnIndex);
+				cursor.close();
+
+				String msg = getResources().getString(R.string.dialog_load);
+				final ProgressDialog load = ProgressDialog.show(TpMainActivity.this, "", msg, true);
+				Thread thread = new Thread() {
+					@Override
+					public void run() {
+						Bitmap bitmap = Utils.decodeFile(new File(filePath));
+						paintView.setBitmap(bitmap);
+						load.dismiss();
+					}
+				};
+				thread.start();
+			}
+			break;
 		}
 	}
 
