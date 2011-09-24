@@ -1,18 +1,9 @@
 package at.droidcode.threadpaint;
 
-import static at.droidcode.threadpaint.TpApplication.TAG;
-
-import java.io.File;
-import java.io.FileOutputStream;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.media.MediaScannerConnection;
-import android.os.Environment;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Surface;
@@ -52,48 +43,18 @@ public final class Utils {
 		activity.setRequestedOrientation(screenOrientation);
 	}
 
-	public static class SaveBitmapThread extends Thread {
-		private final Bitmap bitmap;
-		private final String name;
+	public static class ToastRunnable implements Runnable {
 		private final Context context;
-		private static final int QUALITY = 90;
+		private final String text;
 
-		public SaveBitmapThread(Bitmap bitmap, String name, Context activity) {
-			this.bitmap = bitmap;
-			this.name = name + ".png";
-			this.context = activity;
+		public ToastRunnable(Context c, String message) {
+			context = c;
+			text = message;
 		}
 
 		@Override
 		public void run() {
-			String state = Environment.getExternalStorageState();
-
-			if (Environment.MEDIA_MOUNTED.equals(state)) {
-				File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name);
-				try {
-					FileOutputStream fileOutputStream = new FileOutputStream(file);
-					boolean ok = bitmap.compress(Bitmap.CompressFormat.PNG, QUALITY, fileOutputStream);
-
-					String[] paths = new String[] { file.getAbsolutePath() };
-					MediaScannerConnection.scanFile(context, paths, null, null);
-
-					TpMainActivity.instance.runOnUiThread(new Runnable() {
-						@Override
-						public void run() {
-							CharSequence text = context.getResources().getString(R.string.toast_save_success);
-							Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
-						}
-					});
-					if (ok) {
-						Log.w(TAG, file + " successfully saved!");
-					}
-				} catch (Exception e) {
-					Log.e(TAG, "ERROR writing " + file, e);
-				}
-			} else {
-				Log.w(TAG, "Cannot write to external storage!");
-			}
-			bitmap.recycle();
+			Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
 		}
-	};
+	}
 }
