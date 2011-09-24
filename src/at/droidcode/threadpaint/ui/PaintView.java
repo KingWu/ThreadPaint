@@ -37,6 +37,11 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  * points on a canvas.
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
+	public enum Tool {
+		BRUSH, MOVE
+	};
+
+	private Tool selectedTool;
 	private float moveThreshold;
 	private PaintThread paintThread;
 	private ToolButtonAnimator toolButtonAnimator;
@@ -51,6 +56,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 		setFocusable(true);
 		setOnTouchListener(this);
+
+		selectedTool = Tool.BRUSH;
 
 		moveThreshold = 1.0f;
 
@@ -153,6 +160,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		moveThreshold = f;
 	}
 
+	public Tool selectedTool() {
+		return selectedTool;
+	}
+
+	public void selectTool(Tool tool) {
+		selectedTool = tool;
+	}
+
 	/**
 	 * @return Copy of the Bitmap the PaintThread is drawing onto
 	 */
@@ -217,7 +232,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		handleBrushTool(event);
+		switch (selectedTool) {
+		case BRUSH:
+			handleBrushTool(event);
+			break;
+		case MOVE:
+			handleMoveTool(event);
+			break;
+		}
 		return true;
 	}
 
@@ -251,6 +273,26 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
 			toolButtonAnimator.fadeInToolButtons();
+			break;
+		}
+	}
+
+	private void handleMoveTool(MotionEvent event) {
+		float xTouchCoordinate = event.getX();
+		float yTouchCoordinate = event.getY();
+
+		final int dx = Math.round(xTouchCoordinate - previousX);
+		final int dy = Math.round(yTouchCoordinate - previousY);
+
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
+			break;
+		case MotionEvent.ACTION_MOVE:
+			paintThread.offsetBitmapRect(-dx, -dy);
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
 			break;
 		}
 	}

@@ -297,6 +297,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		Log.d(TAG, "draw point x: " + x + " y: " + y);
 	}
 
+	void offsetBitmapRect(int dx, int dy) {
+		rectBitmap.offset(dx, dy);
+	}
+
 	/**
 	 * Draw the currently used paint over the whole Canvas (Bitmap).
 	 */

@@ -65,6 +65,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 
 	private Button buttonColor;
 	private Button buttonBrush;
+	private Button buttonMove;
 	private Button buttonFill;
 	private Button buttonErase;
 
@@ -79,11 +80,12 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 
 		buttonColor = (Button) findViewById(R.id.btn_color_picker);
 		buttonBrush = (Button) findViewById(R.id.btn_brush_cap_picker);
+		buttonMove = (Button) findViewById(R.id.btn_tool_move);
 		buttonFill = (Button) findViewById(R.id.btn_tool_fill);
 		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
 
 		toolButtons = new ArrayList<View>();
-		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonFill, buttonErase);
+		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase);
 
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
@@ -146,12 +148,20 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			showColorPickerDialog();
 			break;
 		case R.id.btn_brush_cap_picker:
-			showBrushPickerDialog();
+			if (paintView.selectedTool() == PaintView.Tool.BRUSH) {
+				showBrushPickerDialog();
+			} else {
+				paintView.selectTool(PaintView.Tool.BRUSH);
+			}
+			break;
+		case R.id.btn_tool_move:
+			paintView.selectTool(PaintView.Tool.MOVE);
 			break;
 		case R.id.btn_tool_fill:
 			paintView.fillWithPaint();
 			break;
 		case R.id.btn_tool_erase:
+			paintView.selectTool(PaintView.Tool.BRUSH);
 			paintView.setPaintColor(Color.TRANSPARENT);
 			break;
 		default:

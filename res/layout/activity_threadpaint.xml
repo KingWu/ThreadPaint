@@ -32,9 +32,14 @@
     	android:layout_below="@id/btn_color_picker"
     	android:background="@drawable/button_tool_brush" />
     	
-     <Button android:id="@+id/btn_tool_fill"
+    <Button android:id="@+id/btn_tool_move"
     	style="@style/ToolButton"
     	android:layout_below="@id/btn_brush_cap_picker"
+    	android:background="@drawable/button_tool_move" />
+    	
+    <Button android:id="@+id/btn_tool_fill"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_tool_move"
     	android:background="@drawable/button_tool_fill" />
     	
     <Button android:id="@+id/btn_tool_erase"
