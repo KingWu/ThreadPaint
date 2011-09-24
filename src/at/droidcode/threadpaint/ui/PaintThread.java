@@ -237,7 +237,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @return Copy of Bitmap the thread uses.
 	 */
 	Bitmap getBitmap() {
-		return drawingBitmap.copy(Config.ARGB_8888, false);
+		return drawingBitmap.copy(Config.ARGB_8888, true);
 	}
 
 	/**
