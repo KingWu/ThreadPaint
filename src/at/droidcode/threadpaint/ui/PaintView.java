@@ -227,20 +227,31 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		return paintThread;
 	}
 
+	private float xTouchCoordinate;
+	private float yTouchCoordinate;
 	private float previousX;
 	private float previousY;
 	private boolean hasMoved;
-	private boolean pinchToZoom;
-	private float oldDist;
-
-	private float spacing(MotionEvent event) {
-		float x = event.getX(0) - event.getX(1);
-		float y = event.getY(0) - event.getY(1);
-		return FloatMath.sqrt(x * x + y * y);
-	}
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
+		xTouchCoordinate = event.getX();
+		yTouchCoordinate = event.getY();
+
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			previousX = xTouchCoordinate;
+			previousY = yTouchCoordinate;
+			hasMoved = false;
+			break;
+		case MotionEvent.ACTION_MOVE:
+			float dx = Math.abs(xTouchCoordinate - previousX);
+			float dy = Math.abs(yTouchCoordinate - previousY);
+			if (dx > moveThreshold || dy > moveThreshold) {
+				hasMoved = true;
+			}
+			break;
+		}
 		switch (selectedTool) {
 		case BRUSH:
 			handleBrushTool(event);
@@ -249,31 +260,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			handleMoveTool(event);
 			break;
 		}
+		previousX = xTouchCoordinate;
+		previousY = yTouchCoordinate;
 		return true;
 	}
 
 	private void handleBrushTool(MotionEvent event) {
-		float xTouchCoordinate = event.getX();
-		float yTouchCoordinate = event.getY();
-
-		final float dx = Math.abs(xTouchCoordinate - previousX);
-		final float dy = Math.abs(yTouchCoordinate - previousY);
 
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			paintThread.startPath(xTouchCoordinate, yTouchCoordinate);
 			toolButtonAnimator.fadeOutToolButtons();
-			previousX = xTouchCoordinate;
-			previousY = yTouchCoordinate;
-			hasMoved = false;
 			break;
 		case MotionEvent.ACTION_MOVE:
-			if (dx > moveThreshold || dy > moveThreshold) {
-				hasMoved = true;
+			if (hasMoved) {
 				paintThread.updatePath(previousX, previousY, xTouchCoordinate, yTouchCoordinate);
 			}
-			previousX = xTouchCoordinate;
-			previousY = yTouchCoordinate;
 			break;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
@@ -286,32 +288,34 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		}
 	}
 
-	private void handleMoveTool(MotionEvent event) {
-		float xTouchCoordinate = event.getX();
-		float yTouchCoordinate = event.getY();
+	private boolean pinchToZoom;
+	private float oldDist;
 
-		final int dx = Math.round(xTouchCoordinate - previousX);
-		final int dy = Math.round(yTouchCoordinate - previousY);
+	private float spacing(MotionEvent event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return FloatMath.sqrt(x * x + y * y);
+	}
+
+	private void handleMoveTool(MotionEvent event) {
 
 		switch (event.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-			previousX = xTouchCoordinate;
-			previousY = yTouchCoordinate;
-			break;
 		case MotionEvent.ACTION_POINTER_2_DOWN:
-			oldDist = spacing(event);
+			oldDist = spacing(event) / paintThread.getZoom();
 			pinchToZoom = true;
 			break;
 		case MotionEvent.ACTION_MOVE:
 			if (pinchToZoom) {
 				float newDist = spacing(event);
-				float scale = newDist / oldDist;
-				paintThread.zoom(scale);
+				if (newDist > 10) {
+					float scale = newDist / oldDist;
+					paintThread.zoom(scale);
+				}
 			} else {
+				int dx = Math.round(xTouchCoordinate - previousX);
+				int dy = Math.round(yTouchCoordinate - previousY);
 				paintThread.scroll(dx, dy);
 			}
-			previousX = xTouchCoordinate;
-			previousY = yTouchCoordinate;
 			break;
 		default:
 			pinchToZoom = false;

@@ -54,7 +54,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
 	private final Point scroll;
-	private float zoom;
+	float zoom;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
@@ -270,6 +270,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		return bitmapPathPaint;
 	}
 
+	float getZoom() {
+		return zoom;
+	}
+
 	/**
 	 * Begin a new path at the specified coordinates on the Bitmap.
 	 * 
@@ -278,7 +282,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void startPath(float x, float y) {
 		pathToDraw.rewind();
-		pathToDraw.moveTo(x - scroll.x, y - scroll.y);
+		translate(x, y);
+		pathToDraw.moveTo(translate.x, translate.y);
 	}
 
 	/**
@@ -290,11 +295,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		float xx1 = x1 - scroll.x;
-		float yy1 = y1 - scroll.y;
-		float cx = (xx1 + x2 - scroll.x) / 2;
-		float cy = (yy1 + y2 - scroll.y) / 2;
-		// pathToDraw.quadTo(cx, cy, x2, y2);
+		translate(x1, y1);
+		float xx1 = translate.x;
+		float yy1 = translate.y;
+		translate(x2, y2);
+		float cx = (xx1 + translate.x) / 2;
+		float cy = (yy1 + translate.y) / 2;
 		pathToDraw.quadTo(xx1, yy1, cx, cy);
 	}
 
@@ -305,7 +311,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		bitmapCanvas.drawPoint(x - scroll.x, y - scroll.y, bitmapPathPaint);
+		translate(x, y);
+		bitmapCanvas.drawPoint(translate.x, translate.y, bitmapPathPaint);
 	}
 
 	void scroll(int dx, int dy) {
@@ -317,8 +324,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (scroll.y > 0) {
 				scroll.y = 0;
 			}
-			int xMax = -1 * (rectBitmap.right - rectSurface.right);
-			int yMax = -1 * (rectBitmap.bottom - rectSurface.bottom);
+			int xMax = Math.round(-1 * (rectBitmap.right - rectSurface.right / zoom));
+			int yMax = Math.round(-1 * (rectBitmap.bottom - rectSurface.bottom / zoom));
+			Log.d(TAG, "xMax:" + xMax + " yMax:" + yMax);
+			Log.d(TAG, "scrollx:" + scroll.x + " scrolly:" + scroll.y);
 			if (scroll.x < xMax) {
 				scroll.x = xMax;
 			}
@@ -330,14 +339,23 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	void zoom(float scale) {
 		synchronized (lock) {
-			Log.d(TAG, "zoom:" + zoom + " scale:" + scale);
 			if (zoom >= 1) {
-				zoom += (scale - zoom);
+				zoom = scale;
 			}
 			if (zoom < 1) {
 				zoom = 1;
 			}
+			Log.d(TAG, "zoom:" + zoom);
 		}
+	}
+
+	private final Point translate = new Point();
+
+	// Translate screen coordinates to bitmap coordinates.
+	private Point translate(float x, float y) {
+		translate.x = Math.round((x - scroll.x * zoom) / zoom);
+		translate.y = Math.round((y - scroll.y * zoom) / zoom);
+		return translate;
 	}
 
 	/**
