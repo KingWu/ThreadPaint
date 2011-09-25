@@ -146,14 +146,14 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param canvas External Canvas onto which the thread draws.
 	 */
 	private void doDraw(Canvas canvas) {
+		canvas.scale(zoom, zoom);
+		canvas.translate(scroll.x, scroll.y);
 		canvas.drawPaint(checkeredPattern);
 		if (drawPathOnBitmap) {
 			bitmapCanvas.drawPath(pathToDraw, bitmapPathPaint);
 			pathToDraw.rewind();
 			drawPathOnBitmap = false;
 		}
-		canvas.scale(zoom, zoom);
-		canvas.translate(scroll.x, scroll.y);
 		canvas.drawBitmap(drawingBitmap, null, rectBitmap, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
@@ -317,7 +317,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	void scroll(int dx, int dy) {
 		synchronized (lock) {
-			scroll.offset(dx, dy);
+			scroll.offset(Math.round(dx / zoom), Math.round(dy / zoom));
 			if (scroll.x > 0) {
 				scroll.x = 0;
 			}
@@ -326,8 +326,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			}
 			int xMax = Math.round(-1 * (rectBitmap.right - rectSurface.right / zoom));
 			int yMax = Math.round(-1 * (rectBitmap.bottom - rectSurface.bottom / zoom));
-			Log.d(TAG, "xMax:" + xMax + " yMax:" + yMax);
-			Log.d(TAG, "scrollx:" + scroll.x + " scrolly:" + scroll.y);
 			if (scroll.x < xMax) {
 				scroll.x = xMax;
 			}
@@ -345,7 +343,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (zoom < 1) {
 				zoom = 1;
 			}
-			Log.d(TAG, "zoom:" + zoom);
 		}
 	}
 
