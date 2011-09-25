@@ -299,6 +299,30 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	void offsetBitmapRect(int dx, int dy) {
 		rectBitmap.offset(dx, dy);
+		// Log.d(TAG, "-------------------------------------------");
+		// Log.d(TAG, "bmp width:" + drawingBitmap.getWidth() + "\t height:" + drawingBitmap.getHeight());
+		// Log.d(TAG, "rectSurfac l:" + rectSurface.left + "\tr:" + rectSurface.right);
+		// Log.d(TAG, "rectSurfac t:" + rectSurface.top + "\tb:" + rectSurface.bottom);
+		// Log.d(TAG, "rectBitmap l:" + rectBitmap.left + "\tr:" + rectBitmap.right);
+		// Log.d(TAG, "rectBitmap t:" + rectBitmap.top + "\tb:" + rectBitmap.bottom);
+		int bmpWidth = drawingBitmap.getWidth();
+		int bmpHeight = drawingBitmap.getHeight();
+		if (rectBitmap.left < 0) {
+			rectBitmap.right = rectBitmap.width();
+			rectBitmap.left = 0;
+		}
+		if (rectBitmap.top < 0) {
+			rectBitmap.bottom = rectBitmap.height();
+			rectBitmap.top = 0;
+		}
+		if (rectBitmap.right > bmpWidth) {
+			rectBitmap.left = bmpWidth - rectSurface.right;
+			rectBitmap.right = bmpWidth;
+		}
+		if (rectBitmap.bottom > bmpHeight) {
+			rectBitmap.top = bmpHeight - rectSurface.bottom;
+			rectBitmap.bottom = bmpHeight;
+		}
 	}
 
 	/**
