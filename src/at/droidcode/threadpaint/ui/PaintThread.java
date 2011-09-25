@@ -25,6 +25,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Path;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -52,6 +53,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
+	private final Point scroll;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
@@ -71,6 +73,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapCanvas.setBitmap(drawingBitmap);
 		rectSurface = new Rect();
 		rectBitmap = new Rect();
+		scroll = new Point(0, 0);
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
@@ -147,7 +150,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			pathToDraw.rewind();
 			drawPathOnBitmap = false;
 		}
-		canvas.drawBitmap(drawingBitmap, rectBitmap, rectSurface, null);
+		canvas.translate(scroll.x, scroll.y);
+		canvas.drawBitmap(drawingBitmap, null, rectBitmap, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
 
@@ -192,10 +196,14 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void setSurfaceSize(int width, int height, Rect rect) {
 		synchronized (lock) {
-			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
-			bitmapCanvas.setBitmap(drawingBitmap);
 			rectSurface.set(rect);
-			rectBitmap.set(rect);
+			if (rectBitmap.isEmpty()) {
+				rectBitmap.set(rect);
+			}
+			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
+				drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
+				bitmapCanvas.setBitmap(drawingBitmap);
+			}
 		}
 	}
 
@@ -230,8 +238,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
-			// fit image into screen
-			// rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+			scroll.set(0, 0);
+			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
 			drawingBitmap = bitmap;
 			bitmapCanvas.setBitmap(drawingBitmap);
 		}
@@ -266,8 +274,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void startPath(float x, float y) {
 		pathToDraw.rewind();
-		pathToDraw.moveTo(x, y);
-		Log.d(TAG, "start path x: " + x + " y: " + y);
+		pathToDraw.moveTo(x - scroll.x, y - scroll.y);
 	}
 
 	/**
@@ -279,11 +286,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		final float cx = (x1 + x2) / 2;
-		final float cy = (y1 + y2) / 2;
+		float xx1 = x1 - scroll.x;
+		float yy1 = y1 - scroll.y;
+		float cx = (xx1 + x2 - scroll.x) / 2;
+		float cy = (yy1 + y2 - scroll.y) / 2;
 		// pathToDraw.quadTo(cx, cy, x2, y2);
-		pathToDraw.quadTo(x1, y1, cx, cy);
-		Log.d(TAG, "update path x1: " + x1 + " y1: " + y1 + " x2: " + x2 + " y2: " + y2);
+		pathToDraw.quadTo(xx1, yy1, cx, cy);
 	}
 
 	/**
@@ -293,35 +301,26 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		bitmapCanvas.drawPoint(x, y, bitmapPathPaint);
-		Log.d(TAG, "draw point x: " + x + " y: " + y);
+		bitmapCanvas.drawPoint(x - scroll.x, y - scroll.y, bitmapPathPaint);
 	}
 
-	void offsetBitmapRect(int dx, int dy) {
-		rectBitmap.offset(dx, dy);
-		// Log.d(TAG, "-------------------------------------------");
-		// Log.d(TAG, "bmp width:" + drawingBitmap.getWidth() + "\t height:" + drawingBitmap.getHeight());
-		// Log.d(TAG, "rectSurfac l:" + rectSurface.left + "\tr:" + rectSurface.right);
-		// Log.d(TAG, "rectSurfac t:" + rectSurface.top + "\tb:" + rectSurface.bottom);
-		// Log.d(TAG, "rectBitmap l:" + rectBitmap.left + "\tr:" + rectBitmap.right);
-		// Log.d(TAG, "rectBitmap t:" + rectBitmap.top + "\tb:" + rectBitmap.bottom);
-		int bmpWidth = drawingBitmap.getWidth();
-		int bmpHeight = drawingBitmap.getHeight();
-		if (rectBitmap.left < 0) {
-			rectBitmap.right = rectBitmap.width();
-			rectBitmap.left = 0;
-		}
-		if (rectBitmap.top < 0) {
-			rectBitmap.bottom = rectBitmap.height();
-			rectBitmap.top = 0;
-		}
-		if (rectBitmap.right > bmpWidth) {
-			rectBitmap.left = bmpWidth - rectSurface.right;
-			rectBitmap.right = bmpWidth;
-		}
-		if (rectBitmap.bottom > bmpHeight) {
-			rectBitmap.top = bmpHeight - rectSurface.bottom;
-			rectBitmap.bottom = bmpHeight;
+	void scroll(int dx, int dy) {
+		synchronized (lock) {
+			scroll.offset(dx, dy);
+			if (scroll.x > 0) {
+				scroll.x = 0;
+			}
+			if (scroll.y > 0) {
+				scroll.y = 0;
+			}
+			int xMax = -1 * (rectBitmap.right - rectSurface.right);
+			int yMax = -1 * (rectBitmap.bottom - rectSurface.bottom);
+			if (scroll.x < xMax) {
+				scroll.x = xMax;
+			}
+			if (scroll.y < yMax) {
+				scroll.y = yMax;
+			}
 		}
 	}
 
@@ -336,6 +335,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * Draw the transparency paint over the whole Canvas (Bitmap).
 	 */
 	void clearCanvas() {
+		scroll.set(0, 0);
 		bitmapCanvas.drawPaint(transparencyPaint);
 	}
 }

@@ -290,7 +290,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			previousY = yTouchCoordinate;
 			break;
 		case MotionEvent.ACTION_MOVE:
-			paintThread.offsetBitmapRect(-dx, -dy);
+			paintThread.scroll(dx, dy);
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
 			break;
