@@ -23,6 +23,7 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.AttributeSet;
+import android.util.FloatMath;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
@@ -229,6 +230,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private float previousX;
 	private float previousY;
 	private boolean hasMoved;
+	private boolean pinchToZoom;
+	private float oldDist;
+
+	private float spacing(MotionEvent event) {
+		float x = event.getX(0) - event.getX(1);
+		float y = event.getY(0) - event.getY(1);
+		return FloatMath.sqrt(x * x + y * y);
+	}
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
@@ -289,10 +298,23 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
 			break;
+		case MotionEvent.ACTION_POINTER_2_DOWN:
+			oldDist = spacing(event);
+			pinchToZoom = true;
+			break;
 		case MotionEvent.ACTION_MOVE:
-			paintThread.scroll(dx, dy);
+			if (pinchToZoom) {
+				float newDist = spacing(event);
+				float scale = newDist / oldDist;
+				paintThread.zoom(scale);
+			} else {
+				paintThread.scroll(dx, dy);
+			}
 			previousX = xTouchCoordinate;
 			previousY = yTouchCoordinate;
+			break;
+		default:
+			pinchToZoom = false;
 			break;
 		}
 	}

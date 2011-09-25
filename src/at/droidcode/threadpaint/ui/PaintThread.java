@@ -54,6 +54,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
 	private final Point scroll;
+	private float zoom;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
@@ -74,6 +75,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		rectSurface = new Rect();
 		rectBitmap = new Rect();
 		scroll = new Point(0, 0);
+		zoom = 1f;
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
@@ -150,6 +152,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			pathToDraw.rewind();
 			drawPathOnBitmap = false;
 		}
+		canvas.scale(zoom, zoom);
 		canvas.translate(scroll.x, scroll.y);
 		canvas.drawBitmap(drawingBitmap, null, rectBitmap, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
@@ -238,6 +241,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
+			zoom = 1;
 			scroll.set(0, 0);
 			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
 			drawingBitmap = bitmap;
@@ -324,6 +328,18 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		}
 	}
 
+	void zoom(float scale) {
+		synchronized (lock) {
+			Log.d(TAG, "zoom:" + zoom + " scale:" + scale);
+			if (zoom >= 1) {
+				zoom += (scale - zoom);
+			}
+			if (zoom < 1) {
+				zoom = 1;
+			}
+		}
+	}
+
 	/**
 	 * Draw the currently used paint over the whole Canvas (Bitmap).
 	 */
@@ -335,6 +351,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * Draw the transparency paint over the whole Canvas (Bitmap).
 	 */
 	void clearCanvas() {
+		zoom = 1;
 		scroll.set(0, 0);
 		bitmapCanvas.drawPaint(transparencyPaint);
 	}
