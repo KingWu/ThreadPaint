@@ -19,7 +19,8 @@ package at.droidcode.threadpaint;
 import android.app.Application;
 
 /**
- * This class is used to provide application global variables that need to be initialized on startup.
+ * This class is used to provide application global variables that need to be initialized on
+ * startup.
  */
 public class TpApplication extends Application {
 	public static final String TAG = "THREADPAINT";
@@ -36,7 +37,8 @@ public class TpApplication extends Application {
 	}
 
 	/**
-	 * @return the maximum width of the brush stroke in pixels, depending on the hardware's pixel density.
+	 * @return the maximum width of the brush stroke in pixels, depending on the hardware's pixel
+	 *         density.
 	 */
 	public int maxStrokeWidth() {
 		return maxStrokeWidthPx;

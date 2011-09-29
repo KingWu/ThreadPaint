@@ -85,7 +85,8 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
 
 		toolButtons = new ArrayList<View>();
-		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase);
+		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill,
+				buttonErase);
 
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
@@ -176,7 +177,8 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 				Uri imageUri = data.getData();
 				String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
-				Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
+				Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null,
+						null);
 				cursor.moveToFirst();
 
 				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
@@ -188,7 +190,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 				Thread thread = new Thread() {
 					@Override
 					public void run() {
-						Bitmap bitmap = Utils.decodeFile(new File(filePath));
+						Bitmap bitmap = Utils.decodeFile(TpMainActivity.this, new File(filePath));
 						paintView.setBitmap(bitmap);
 						load.dismiss();
 					}

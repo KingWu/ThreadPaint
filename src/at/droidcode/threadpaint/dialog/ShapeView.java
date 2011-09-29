@@ -37,7 +37,8 @@ import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.Utils;
 
 /**
- * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source Project.
+ * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source
+ * Project.
  */
 public abstract class ShapeView extends View {
 	interface ShapeClickedListener {
@@ -89,8 +90,10 @@ public abstract class ShapeView extends View {
 		r += indicatorFrameWidth;
 		rectFrame = new RectF(-r, -r, r, r);
 
-		Bitmap checkerboard = BitmapFactory.decodeResource(c.getResources(), R.drawable.transparent);
-		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		Bitmap checkerboard = BitmapFactory
+				.decodeResource(c.getResources(), R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT,
+				Shader.TileMode.REPEAT);
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
 	}

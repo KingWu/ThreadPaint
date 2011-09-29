@@ -33,7 +33,8 @@ import android.view.MotionEvent;
 import at.droidcode.threadpaint.R;
 
 /**
- * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source Project.
+ * A donut-shaped dial selector to choose any color. Based on an API Demo by The Android Open Source
+ * Project.
  */
 public class ColorDialView extends ShapeView {
 	private final RectF ovalRect;

@@ -14,8 +14,8 @@ import at.droidcode.threadpaint.dialog.ShapeView.Shape;
 import at.droidcode.threadpaint.dialog.ShapeView.ShapeClickedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
-public class BrushPickerDialog extends AlertDialog implements View.OnClickListener, OnSeekBarChangeListener,
-		ShapeClickedListener {
+public class BrushPickerDialog extends AlertDialog implements View.OnClickListener,
+		OnSeekBarChangeListener, ShapeClickedListener {
 	public interface OnBrushChangedListener {
 		void capChanged(Cap cap);
 

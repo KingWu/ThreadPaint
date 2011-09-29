@@ -34,8 +34,8 @@ import at.droidcode.threadpaint.dialog.BrushPickerDialog.OnBrushChangedListener;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
 
 /**
- * View that holds the surface onto which a user can draw. Has an OnTouchListener to turn user input into paths and
- * points on a canvas.
+ * View that holds the surface onto which a user can draw. Has an OnTouchListener to turn user input
+ * into paths and points on a canvas.
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 	public enum Tool {
@@ -112,8 +112,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * If paintThread is null a new thread with the Bitmap stored in the Bundle is created. Typically called when
-	 * ThreadPaintActivity is being restored after having been previously destroyed and thus the thread was terminated.
+	 * If paintThread is null a new thread with the Bitmap stored in the Bundle is created.
+	 * Typically called when ThreadPaintActivity is being restored after having been previously
+	 * destroyed and thus the thread was terminated.
 	 * 
 	 * @param savedState Bundle containing saved attributes
 	 */
@@ -127,7 +128,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * Stops the PaintThread and nulls the reference. Typically called when ThreadPaintActivity is being destroyed.
+	 * Stops the PaintThread and nulls the reference. Typically called when ThreadPaintActivity is
+	 * being destroyed.
 	 */
 	public synchronized void terminatePaintThread() {
 		Log.d(TAG, "terminatePaintThread");

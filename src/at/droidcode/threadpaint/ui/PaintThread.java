@@ -79,7 +79,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
-		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
+		final TpApplication appContext = (TpApplication) paintView.getContext()
+				.getApplicationContext();
 
 		final int color = appContext.getResources().getColor(R.color.stroke_standard);
 		bitmapPathPaint = new Paint();
@@ -92,8 +93,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapPathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
 		canvasPathPaint = new Paint(bitmapPathPaint);
 
-		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.transparent);
-		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(),
+				R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT,
+				Shader.TileMode.REPEAT);
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
 
@@ -133,15 +136,16 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private boolean drawPathOnBitmap = false;
 
 	/**
-	 * Causes the Thread to draw the pathToDraw onto the Bitmap instead of the Canvas during the next pass.
+	 * Causes the Thread to draw the pathToDraw onto the Bitmap instead of the Canvas during the
+	 * next pass.
 	 */
 	void drawPathOnBitmap() {
 		drawPathOnBitmap = true;
 	}
 
 	/**
-	 * After the checkered background pattern the finished Path is drawn onto the Bitmap if necessary. Then the Bitmap
-	 * and finally a still open Path are drawn onto the given Canvas.
+	 * After the checkered background pattern the finished Path is drawn onto the Bitmap if
+	 * necessary. Then the Bitmap and finally a still open Path are drawn onto the given Canvas.
 	 * 
 	 * @param canvas External Canvas onto which the thread draws.
 	 */
@@ -191,7 +195,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap actually as big as the screen.
+	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap actually
+	 * as big as the screen.
 	 * 
 	 * @param width Width of the SurfaceView.
 	 * @param height Height of the SurfaceView.
@@ -218,7 +223,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Cause the thread to wait or resume. Passing false if the thread is paused will call notify() on the waiting lock.
+	 * Cause the thread to wait or resume. Passing false if the thread is paused will call notify()
+	 * on the waiting lock.
 	 * 
 	 * @param pause true to pause drawing, false to resume
 	 */
@@ -287,7 +293,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Continue and interpolate a started path from the previous to the new coordinates on the Bitmap.
+	 * Continue and interpolate a started path from the previous to the new coordinates on the
+	 * Bitmap.
 	 * 
 	 * @param x1 Previous X-Coordinate on the Bitmap.
 	 * @param y1 Previous Y-Coordinate on the Bitmap.
@@ -315,6 +322,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapCanvas.drawPoint(translate.x, translate.y, bitmapPathPaint);
 	}
 
+	/**
+	 * Translate the Canvas by a given offset.
+	 * 
+	 * @param dx Offset on the x-axis
+	 * @param dy Offset on the y-axis
+	 */
 	void scroll(int dx, int dy) {
 		synchronized (lock) {
 			scroll.offset(Math.round(dx / zoom), Math.round(dy / zoom));
@@ -335,6 +348,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		}
 	}
 
+	/**
+	 * Sets the zoom factor for the Canvas.
+	 * 
+	 * @param scale (1..*) Factor to zoom
+	 */
 	void zoom(float scale) {
 		synchronized (lock) {
 			if (zoom >= 1) {

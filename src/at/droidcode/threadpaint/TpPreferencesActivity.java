@@ -27,8 +27,8 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import at.droidcode.threadpaint.api.PreferencesCallback;
 
-public class TpPreferencesActivity extends PreferenceActivity implements OnSharedPreferenceChangeListener,
-		PreferencesCallback {
+public class TpPreferencesActivity extends PreferenceActivity implements
+		OnSharedPreferenceChangeListener, PreferencesCallback {
 	public enum Preference {
 		LOCKORIENTATION("pref_orientation"), MOVETHRESHOLD("pref_movethreshold");
 		private final String key;
@@ -49,7 +49,8 @@ public class TpPreferencesActivity extends PreferenceActivity implements OnShare
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.preferences);
 
-		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+		final SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(getApplicationContext());
 		prefs.registerOnSharedPreferenceChangeListener(this);
 
 		addCallbackForPreference(this, Preference.LOCKORIENTATION);

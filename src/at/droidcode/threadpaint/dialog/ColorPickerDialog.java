@@ -32,10 +32,11 @@ import at.droidcode.threadpaint.dialog.ShapeView.ShapeClickedListener;
 import at.droidcode.threadpaint.ui.PaintView;
 
 /**
- * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the width of the
- * brush's stroke.
+ * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the
+ * width of the brush's stroke.
  */
-public class ColorPickerDialog extends AlertDialog implements ShapeClickedListener, SeekBar.OnSeekBarChangeListener {
+public class ColorPickerDialog extends AlertDialog implements ShapeClickedListener,
+		SeekBar.OnSeekBarChangeListener {
 	public interface OnPaintChangedListener {
 		void colorChanged(int color);
 	}
@@ -96,7 +97,8 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 
 	@Override
 	public void onShapeClicked() {
-		Log.d(TpApplication.TAG, "onShapeClicked " + Integer.toHexString(colorDialView.getShapeColor()));
+		Log.d(TpApplication.TAG,
+				"onShapeClicked " + Integer.toHexString(colorDialView.getShapeColor()));
 		paintListener.colorChanged(colorDialView.getShapeColor());
 		dismiss();
 	}
