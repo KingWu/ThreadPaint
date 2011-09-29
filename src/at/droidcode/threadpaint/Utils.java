@@ -15,6 +15,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
@@ -61,7 +62,7 @@ public final class Utils {
 	 * @param f File referring to the image
 	 * @return Decoded and scaled Bitmap
 	 */
-	public static Bitmap decodeFile(File f) {
+	public static Bitmap decodeFile(Context c, File f) {
 		Bitmap tmpBitmap = null;
 		try {
 			// Decode image size
@@ -89,7 +90,7 @@ public final class Utils {
 
 			// http://sudarnimalan.blogspot.com/2011/09/android-convert-immutable-bitmap-into.html
 			// this is the file going to use temporally to save the bytes.
-			File file = new File("/mnt/sdcard/sample/temp.txt");
+			File file = new File(c.getExternalFilesDir(Environment.DIRECTORY_PICTURES), "tmp");
 			file.getParentFile().mkdirs();
 
 			// Open an RandomAccessFile
