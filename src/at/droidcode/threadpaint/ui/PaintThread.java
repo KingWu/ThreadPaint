@@ -199,11 +199,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param height Height of the SurfaceView.
 	 * @param rect Rect of the SurfaceView.
 	 */
-	void setSurfaceSize(int width, int height, Rect rect) {
+	void setSurfaceSize(int width, int height) {
 		synchronized (lock) {
-			rectSurface.set(rect);
+			rectSurface.set(0, 0, width, height);
 			if (rectBitmap.isEmpty()) {
-				rectBitmap.set(rect);
+				rectBitmap.set(0, 0, width, height);
 			}
 			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
 				drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
@@ -378,11 +378,16 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * Draw the transparency paint over the whole Canvas (Bitmap).
+	 * Reset the Canvas with an empty, transparent Bitmap of surface size. Also reset scroll and
+	 * zoom values.
 	 */
-	void clearCanvas() {
-		zoom = 1;
-		scroll.set(0, 0);
-		bitmapCanvas.drawPaint(transparencyPaint);
+	void resetCanvas() {
+		synchronized (lock) {
+			zoom = 1;
+			scroll.set(0, 0);
+			bitmapCanvas.drawPaint(transparencyPaint);
+			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, rectSurface.right, rectSurface.bottom, false);
+			bitmapCanvas.setBitmap(drawingBitmap);
+		}
 	}
 }

@@ -20,7 +20,6 @@ import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.FloatMath;
@@ -71,13 +70,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		Log.w(TAG, "surfaceChanged");
 
-		Rect rect = new Rect();
-		rect.left = getLeft();
-		rect.top = getTop();
-		rect.right = getRight();
-		rect.bottom = getBottom();
-
-		paintThread.setSurfaceSize(width, height, rect);
+		paintThread.setSurfaceSize(width, height);
 	}
 
 	@Override
@@ -209,10 +202,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * Fills the whole canvas with transparency.
+	 * Create an empty new Canvas with reset perspective.
 	 */
-	public void clearCanvas() {
-		paintThread.clearCanvas();
+	public void resetCanvas() {
+		paintThread.resetCanvas();
 	}
 
 	/**

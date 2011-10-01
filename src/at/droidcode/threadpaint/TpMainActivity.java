@@ -132,7 +132,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			startActivityForResult(intent, REQ_LOAD);
 			return true;
 		case R.id.menu_clear:
-			paintView.clearCanvas();
+			paintView.resetCanvas();
 			return true;
 		case R.id.menu_prefs:
 			Intent i = new Intent(this, TpPreferencesActivity.class);
