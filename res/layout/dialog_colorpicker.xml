@@ -24,12 +24,7 @@
   	android:layout_width="fill_parent"
   	android:layout_height="wrap_content"
   	android:gravity="center_horizontal">
-  	<Button android:id="@+id/btn_colorpicker_color"
-  		android:layout_width="fill_parent"
-  		android:layout_height="wrap_content"
-  		android:layout_weight="1"
-  		android:text="@string/btn_color"/>
-  	<Button android:id="@+id/btn_colorpicker_grey"
+  	<Button android:id="@+id/btn_colorpicker_toggle_color"
   		android:layout_width="fill_parent"
   		android:layout_height="wrap_content"
   		android:layout_weight="1"

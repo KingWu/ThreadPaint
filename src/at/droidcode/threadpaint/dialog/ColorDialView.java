@@ -40,6 +40,7 @@ public class ColorDialView extends ShapeView {
 	private final RectF ovalRect;
 	private final Paint gradientPaint;
 	private int[] colorSpectrum;
+	private boolean isGreyscale;
 
 	private int alpha;
 
@@ -58,11 +59,19 @@ public class ColorDialView extends ShapeView {
 	}
 
 	/**
+	 * @return True if the colors are greyscale, false otherwise.
+	 */
+	public boolean isGreyscale() {
+		return isGreyscale;
+	}
+
+	/**
 	 * Switches the color palette from colour to greyscale
 	 * 
 	 * @param b Greyscale if true, rgb colors if false
 	 */
 	final void setGreyscale(boolean b) {
+		isGreyscale = b;
 		final TypedArray colorArray;
 		if (b) {
 			colorArray = getContext().getResources().obtainTypedArray(R.array.grey_spectrum);

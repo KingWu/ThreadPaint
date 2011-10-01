@@ -61,18 +61,17 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 		int x = ((TpApplication) getContext().getApplicationContext()).maxStrokeWidth();
 		colorDialView.setShapeDiameter(x * 0.66f);
 
-		final Button colorButton = (Button) findViewById(R.id.btn_colorpicker_color);
-		colorButton.setOnClickListener(new View.OnClickListener() {
+		final Button toggleButton = (Button) findViewById(R.id.btn_colorpicker_toggle_color);
+		toggleButton.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				colorDialView.setGreyscale(false);
-			}
-		});
-		final Button greyButton = (Button) findViewById(R.id.btn_colorpicker_grey);
-		greyButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				colorDialView.setGreyscale(true);
+				if (colorDialView.isGreyscale()) {
+					toggleButton.setText(R.string.btn_grey);
+					colorDialView.setGreyscale(false);
+				} else {
+					toggleButton.setText(R.string.btn_color);
+					colorDialView.setGreyscale(true);
+				}
 			}
 		});
 
