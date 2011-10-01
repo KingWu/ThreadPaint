@@ -79,8 +79,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
-		final TpApplication appContext = (TpApplication) paintView.getContext()
-				.getApplicationContext();
+		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
 
 		final int color = appContext.getResources().getColor(R.color.stroke_standard);
 		bitmapPathPaint = new Paint();
@@ -93,10 +92,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		bitmapPathPaint.setStrokeWidth(appContext.maxStrokeWidth() / 2);
 		canvasPathPaint = new Paint(bitmapPathPaint);
 
-		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(),
-				R.drawable.transparent);
-		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT,
-				Shader.TileMode.REPEAT);
+		Bitmap checkerboard = BitmapFactory.decodeResource(appContext.getResources(), R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
 
@@ -228,7 +225,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * 
 	 * @param pause true to pause drawing, false to resume
 	 */
-	public void setPaused(boolean pause) {
+	void setPaused(boolean pause) {
 		synchronized (lock) {
 			if (!pause && isPaused) {
 				lock.notify();

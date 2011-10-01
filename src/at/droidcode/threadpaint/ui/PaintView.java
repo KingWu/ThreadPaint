@@ -172,7 +172,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * @return Copy of the Bitmap the PaintThread is drawing onto
+	 * @return Actual Bitmap that is drawn onto, a copy might be to big.
 	 */
 	public Bitmap getBitmap() {
 		return paintThread.getBitmap();

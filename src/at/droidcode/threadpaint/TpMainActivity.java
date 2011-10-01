@@ -85,8 +85,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
 
 		toolButtons = new ArrayList<View>();
-		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill,
-				buttonErase);
+		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase);
 
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
@@ -177,16 +176,15 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 				Uri imageUri = data.getData();
 				String[] filePathColumn = { MediaStore.Images.Media.DATA };
 
-				Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null,
-						null);
+				Cursor cursor = getContentResolver().query(imageUri, filePathColumn, null, null, null);
 				cursor.moveToFirst();
 
 				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
 				final String filePath = cursor.getString(columnIndex);
 				cursor.close();
 
-				String msg = getResources().getString(R.string.dialog_load);
-				final ProgressDialog load = ProgressDialog.show(TpMainActivity.this, "", msg, true);
+				String loadMessge = getResources().getString(R.string.dialog_load);
+				final ProgressDialog load = ProgressDialog.show(TpMainActivity.this, "", loadMessge, true);
 				Thread thread = new Thread() {
 					@Override
 					public void run() {
