@@ -15,6 +15,6 @@
 <resources>
     <color name="canvas_background">#FFCCCCCC</color>
     <color name="stroke_standard">#FFFF0000</color>
-    <color name="button_tool_pressed">#FF00FF00</color>
-    <color name="button_tool_normal">#00000000</color>
+    <color name="button_tool_pressed">#FFADFF2F</color>
+    <color name="transparent">#00000000</color>
 </resources>

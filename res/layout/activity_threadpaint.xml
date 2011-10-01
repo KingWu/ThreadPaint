@@ -21,20 +21,20 @@
     	android:layout_width="fill_parent"
     	android:layout_height="fill_parent"/>
     	
-    <Button android:id="@+id/btn_color_picker"
+    <Button android:id="@+id/btn_tool_color"
     	style="@style/ToolButton"
     	android:layout_alignParentTop="true"
     	android:layout_marginTop="10dp"
     	android:background="@drawable/button_tool_color" />
     	
-    <Button android:id="@+id/btn_brush_cap_picker"
+    <Button android:id="@+id/btn_tool_brush"
     	style="@style/ToolButton"
-    	android:layout_below="@id/btn_color_picker"
+    	android:layout_below="@id/btn_tool_color"
     	android:background="@drawable/button_tool_brush" />
     	
     <Button android:id="@+id/btn_tool_move"
     	style="@style/ToolButton"
-    	android:layout_below="@id/btn_brush_cap_picker"
+    	android:layout_below="@id/btn_tool_brush"
     	android:background="@drawable/button_tool_move" />
     	
     <Button android:id="@+id/btn_tool_fill"

@@ -39,7 +39,7 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog.OnPaintChangedListener;
  */
 public class PaintView extends SurfaceView implements SurfaceHolder.Callback, View.OnTouchListener {
 	public enum Tool {
-		BRUSH, MOVE
+		BRUSH, MOVE, ERASE
 	};
 
 	private Tool selectedTool;
@@ -255,6 +255,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			break;
 		}
 		switch (selectedTool) {
+		case ERASE:
 		case BRUSH:
 			handleBrushTool(event);
 			break;

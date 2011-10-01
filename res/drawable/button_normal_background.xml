@@ -12,7 +12,7 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License. -->
- <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/button_normal_background" />
-    <item android:drawable="@drawable/ic_tool_brush" />
-</layer-list> 
+ <selector xmlns:android="http://schemas.android.com/apk/res/android">
+     <item android:state_pressed="true" android:drawable="@color/button_tool_pressed" />
+     <item android:drawable="@color/transparent" />
+ </selector>

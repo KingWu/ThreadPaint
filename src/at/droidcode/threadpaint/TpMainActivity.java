@@ -78,14 +78,16 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		paintView = (PaintView) findViewById(R.id.view_paint_view);
 		paintView.setToolButtonAnimator(this);
 
-		buttonColor = (Button) findViewById(R.id.btn_color_picker);
-		buttonBrush = (Button) findViewById(R.id.btn_brush_cap_picker);
+		buttonColor = (Button) findViewById(R.id.btn_tool_color);
+		buttonBrush = (Button) findViewById(R.id.btn_tool_brush);
 		buttonMove = (Button) findViewById(R.id.btn_tool_move);
 		buttonFill = (Button) findViewById(R.id.btn_tool_fill);
 		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
 
 		toolButtons = new ArrayList<View>();
 		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase);
+
+		setSelectedBackground(buttonBrush);
 
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.LOCKORIENTATION);
 		TpPreferencesActivity.addCallbackForPreference(this, Preference.MOVETHRESHOLD);
@@ -141,30 +143,58 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		}
 	}
 
-	// Declared in xml.
+	// Tool Button handler declared in xml.
 	public void onToolButtonClicked(View button) {
 		switch (button.getId()) {
-		case R.id.btn_color_picker:
+		case R.id.btn_tool_color:
 			showColorPickerDialog();
 			break;
-		case R.id.btn_brush_cap_picker:
+		case R.id.btn_tool_brush:
 			if (paintView.selectedTool() == PaintView.Tool.BRUSH) {
 				showBrushPickerDialog();
 			} else {
 				paintView.selectTool(PaintView.Tool.BRUSH);
+				setSelectedBackground(buttonBrush);
 			}
 			break;
 		case R.id.btn_tool_move:
 			paintView.selectTool(PaintView.Tool.MOVE);
+			setSelectedBackground(buttonMove);
 			break;
 		case R.id.btn_tool_fill:
 			paintView.fillWithPaint();
 			break;
 		case R.id.btn_tool_erase:
-			paintView.selectTool(PaintView.Tool.BRUSH);
+			paintView.selectTool(PaintView.Tool.ERASE);
 			paintView.setPaintColor(Color.TRANSPARENT);
+			setSelectedBackground(buttonErase);
 			break;
 		default:
+		}
+	}
+
+	private void setSelectedBackground(Button button) {
+		buttonColor.setBackgroundResource(R.drawable.button_tool_color);
+		buttonBrush.setBackgroundResource(R.drawable.button_tool_brush);
+		buttonMove.setBackgroundResource(R.drawable.button_tool_move);
+		buttonFill.setBackgroundResource(R.drawable.button_tool_fill);
+		buttonErase.setBackgroundResource(R.drawable.button_tool_erase);
+		switch (button.getId()) {
+		case R.id.btn_tool_color:
+			button.setBackgroundResource(R.drawable.button_tool_color_selected);
+			break;
+		case R.id.btn_tool_brush:
+			button.setBackgroundResource(R.drawable.button_tool_brush_selected);
+			break;
+		case R.id.btn_tool_move:
+			button.setBackgroundResource(R.drawable.button_tool_move_selected);
+			break;
+		case R.id.btn_tool_fill:
+			button.setBackgroundResource(R.drawable.button_tool_fill_selected);
+			break;
+		case R.id.btn_tool_erase:
+			button.setBackgroundResource(R.drawable.button_tool_erase_selected);
+			break;
 		}
 	}
 
