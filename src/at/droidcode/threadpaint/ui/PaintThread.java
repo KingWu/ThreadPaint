@@ -60,7 +60,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Paint checkeredPattern;
 	private final Paint transparencyPaint;
 	private final Xfermode eraseXfermode;
-
 	private final SurfaceHolder surfaceHolder;
 
 	public PaintThread(PaintView paintView, Bitmap bitmap) {
@@ -76,8 +75,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		rectBitmap = new Rect();
 		scroll = new Point(0, 0);
 		zoom = 1f;
-
-		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
 		final TpApplication appContext = (TpApplication) paintView.getContext().getApplicationContext();
 
@@ -96,6 +93,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
+
+		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
 
 		transparencyPaint = new Paint();
 		transparencyPaint.setColor(Color.TRANSPARENT);
@@ -246,9 +245,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			}
 			zoom = 1;
 			scroll.set(0, 0);
-			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
 			drawingBitmap = bitmap;
 			bitmapCanvas.setBitmap(drawingBitmap);
+			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
 		}
 	}
 
@@ -284,9 +283,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate on the Bitmap.
 	 */
 	void startPath(float x, float y) {
-		pathToDraw.rewind();
-		translate(x, y);
-		pathToDraw.moveTo(translate.x, translate.y);
+		synchronized (lock) {
+			pathToDraw.rewind();
+			translate(x, y);
+			pathToDraw.moveTo(translate.x, translate.y);
+		}
 	}
 
 	/**
@@ -299,13 +300,15 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		translate(x1, y1);
-		float xx1 = translate.x;
-		float yy1 = translate.y;
-		translate(x2, y2);
-		float cx = (xx1 + translate.x) / 2;
-		float cy = (yy1 + translate.y) / 2;
-		pathToDraw.quadTo(xx1, yy1, cx, cy);
+		synchronized (lock) {
+			translate(x1, y1);
+			float xx1 = translate.x;
+			float yy1 = translate.y;
+			translate(x2, y2);
+			float cx = (xx1 + translate.x) / 2;
+			float cy = (yy1 + translate.y) / 2;
+			pathToDraw.quadTo(xx1, yy1, cx, cy);
+		}
 	}
 
 	/**
@@ -315,8 +318,10 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		translate(x, y);
-		bitmapCanvas.drawPoint(translate.x, translate.y, bitmapPathPaint);
+		synchronized (lock) {
+			translate(x, y);
+			bitmapCanvas.drawPoint(translate.x, translate.y, bitmapPathPaint);
+		}
 	}
 
 	/**
@@ -327,20 +332,30 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void scroll(int dx, int dy) {
 		synchronized (lock) {
-			scroll.offset(Math.round(dx / zoom), Math.round(dy / zoom));
-			if (scroll.x > 0) {
-				scroll.x = 0;
-			}
-			if (scroll.y > 0) {
-				scroll.y = 0;
-			}
-			int xMax = Math.round(-1 * (rectBitmap.right - rectSurface.right / zoom));
-			int yMax = Math.round(-1 * (rectBitmap.bottom - rectSurface.bottom / zoom));
-			if (scroll.x < xMax) {
-				scroll.x = xMax;
-			}
-			if (scroll.y < yMax) {
-				scroll.y = yMax;
+			float surfaceZoomedWidth = rectSurface.right / zoom;
+			float surfaceZoomedHeight = rectSurface.bottom / zoom;
+
+			// Don't scroll if the (zoomed) bitmap is smaller than the surface.
+			if ((surfaceZoomedWidth - rectBitmap.right) > 0 && (surfaceZoomedHeight - rectBitmap.bottom) > 0) {
+				scroll.set(0, 0);
+			} else {
+				scroll.offset(Math.round(dx / zoom), Math.round(dy / zoom));
+				float xMax = -1 * (rectBitmap.right - surfaceZoomedWidth);
+				float yMax = -1 * (rectBitmap.bottom - surfaceZoomedHeight);
+				if (scroll.x < xMax) {
+					scroll.x = Math.round(xMax);
+				}
+				if (scroll.y < yMax) {
+					scroll.y = Math.round(yMax);
+				}
+				// Make checks for upper left corner after checks for
+				// lower right corner to prevent jumping.
+				if (scroll.x > 0) {
+					scroll.x = 0;
+				}
+				if (scroll.y > 0) {
+					scroll.y = 0;
+				}
 			}
 		}
 	}
