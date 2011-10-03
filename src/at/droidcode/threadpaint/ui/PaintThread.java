@@ -401,6 +401,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			zoom = 1;
 			scroll.set(0, 0);
 			bitmapCanvas.drawPaint(transparencyPaint);
+			rectBitmap.set(0, 0, rectSurface.right, rectSurface.bottom);
 			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, rectSurface.right, rectSurface.bottom, false);
 			bitmapCanvas.setBitmap(drawingBitmap);
 		}
