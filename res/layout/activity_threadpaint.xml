@@ -47,4 +47,14 @@
     	android:layout_below="@id/btn_tool_fill"
     	android:background="@drawable/button_tool_erase" />
     	
+   <Button android:id="@+id/btn_tool_undo"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_tool_erase"
+    	android:background="@drawable/button_tool_undo" />
+    	
+   <Button android:id="@+id/btn_tool_redo"
+    	style="@style/ToolButton"
+    	android:layout_below="@id/btn_tool_undo"
+    	android:background="@drawable/button_tool_redo" />
+    	
 </RelativeLayout>

@@ -33,6 +33,8 @@ import android.graphics.Shader;
 import android.graphics.Xfermode;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import at.droidcode.commands.Command;
+import at.droidcode.commands.CommandManager;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
@@ -44,6 +46,7 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener,
 		BrushPickerDialog.OnBrushChangedListener {
 	private final Object lock = new Object();
+	private final CommandManager commandManager;
 
 	private volatile boolean keepRunning;
 	private volatile boolean isPaused;
@@ -65,6 +68,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	public PaintThread(PaintView paintView, Bitmap bitmap) {
 		surfaceHolder = paintView.getHolder();
 		drawingBitmap = bitmap;
+
+		commandManager = new CommandManager();
 
 		keepRunning = false;
 		isPaused = false;
@@ -150,7 +155,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		canvas.translate(scroll.x, scroll.y);
 		canvas.drawPaint(checkeredPattern);
 		if (drawPathOnBitmap) {
-			bitmapCanvas.drawPath(pathToDraw, bitmapPathPaint);
+			Command command = new Command(bitmapPathPaint, pathToDraw);
+			commandManager.commitCommand(command, bitmapCanvas);
+
 			pathToDraw.rewind();
 			drawPathOnBitmap = false;
 		}
@@ -204,9 +211,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (rectBitmap.isEmpty()) {
 				rectBitmap.set(0, 0, width, height);
 			}
+			// Initial Bitmap provided by PaintView.
 			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
 				drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
 				bitmapCanvas.setBitmap(drawingBitmap);
+
+				commandManager.reset(drawingBitmap);
 			}
 		}
 	}
@@ -248,6 +258,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			drawingBitmap = bitmap;
 			bitmapCanvas.setBitmap(drawingBitmap);
 			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
+
+			commandManager.reset(bitmap);
 		}
 	}
 
@@ -320,7 +332,20 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	void drawPoint(float x, float y) {
 		synchronized (lock) {
 			translate(x, y);
-			bitmapCanvas.drawPoint(translate.x, translate.y, bitmapPathPaint);
+			Command command = new Command(bitmapPathPaint, translate);
+			commandManager.commitCommand(command, bitmapCanvas);
+		}
+	}
+
+	void undo() {
+		synchronized (lock) {
+			commandManager.undoLast(bitmapCanvas);
+		}
+	}
+
+	void redo() {
+		synchronized (lock) {
+			commandManager.redoLast(bitmapCanvas);
 		}
 	}
 
@@ -389,7 +414,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * Draw the currently used paint over the whole Canvas (Bitmap).
 	 */
 	void fillWithPaint() {
-		bitmapCanvas.drawPaint(bitmapPathPaint);
+		// bitmapCanvas.drawPaint(bitmapPathPaint);
+		Command command = new Command(bitmapPathPaint);
+		commandManager.commitCommand(command, bitmapCanvas);
 	}
 
 	/**
@@ -404,6 +431,8 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			rectBitmap.set(0, 0, rectSurface.right, rectSurface.bottom);
 			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, rectSurface.right, rectSurface.bottom, false);
 			bitmapCanvas.setBitmap(drawingBitmap);
+
+			commandManager.reset(drawingBitmap);
 		}
 	}
 }

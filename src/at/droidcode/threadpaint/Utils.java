@@ -29,8 +29,7 @@ public final class Utils {
 
 	public static int dp2px(Context context, int dp) {
 		final Resources res = context.getResources();
-		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-				res.getDisplayMetrics());
+		float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, res.getDisplayMetrics());
 		return Math.round(px);
 	}
 
@@ -41,8 +40,7 @@ public final class Utils {
 	public static void lockScreenOrientation(boolean lock, Activity activity) {
 		int screenOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 		if (lock) {
-			Display display = ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE))
-					.getDefaultDisplay();
+			Display display = ((WindowManager) activity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 			switch (display.getRotation()) {
 			case Surface.ROTATION_0:
 				screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
@@ -59,7 +57,7 @@ public final class Utils {
 	}
 
 	/**
-	 * Decodes image and scales it to reduce memory consumption
+	 * Decodes image and scales it to reduce memory consumption.
 	 * 
 	 * @param f File referring to the image
 	 * @return Decoded and scaled Bitmap
@@ -117,6 +115,7 @@ public final class Utils {
 			// close the temporary file and channel , then delete that also
 			channel.close();
 			randomAccessFile.close();
+			file.delete();
 		} catch (FileNotFoundException e) {
 			Log.e(TpApplication.TAG, "ERROR ", e);
 		} catch (IOException e) {

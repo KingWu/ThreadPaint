@@ -208,6 +208,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		paintThread.resetCanvas();
 	}
 
+	public void undo() {
+		paintThread.undo();
+	}
+
+	public void redo() {
+		paintThread.redo();
+	}
+
 	/**
 	 * @return OnPaintChangedListener, usually the PaintThread
 	 */

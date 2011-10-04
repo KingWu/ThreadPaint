@@ -37,8 +37,7 @@ public class SaveFileDialog extends Dialog implements View.OnClickListener {
 		public void run() {
 			Context context = getContext();
 			if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-				File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
-						filename);
+				File file = new File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), filename);
 				try {
 					FileOutputStream fileOutputStream = new FileOutputStream(file);
 					bitmapToSave.compress(Bitmap.CompressFormat.PNG, QUALITY, fileOutputStream);
@@ -55,7 +54,6 @@ public class SaveFileDialog extends Dialog implements View.OnClickListener {
 				String error = context.getResources().getString(R.string.toast_media_not_mounted);
 				TpMainActivity.instance.runOnUiThread(new ToastRunnable(context, error));
 			}
-			bitmapToSave.recycle();
 		}
 	}
 
@@ -82,8 +80,7 @@ public class SaveFileDialog extends Dialog implements View.OnClickListener {
 		case R.id.btn_savefile_save:
 			String filename = editText.getText().toString();
 			if (filename.length() == 0) {
-				CharSequence text = getContext().getResources().getString(
-						R.string.toast_filename_error);
+				CharSequence text = getContext().getResources().getString(R.string.toast_filename_error);
 				Toast toast = Toast.makeText(getContext(), text, Toast.LENGTH_SHORT);
 				toast.setGravity(Gravity.TOP, 0, 0);
 				toast.show();

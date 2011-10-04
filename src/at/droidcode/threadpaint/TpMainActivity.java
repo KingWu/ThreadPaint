@@ -68,6 +68,8 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	private Button buttonMove;
 	private Button buttonFill;
 	private Button buttonErase;
+	private Button buttonUndo;
+	private Button buttonRedo;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -83,9 +85,12 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 		buttonMove = (Button) findViewById(R.id.btn_tool_move);
 		buttonFill = (Button) findViewById(R.id.btn_tool_fill);
 		buttonErase = (Button) findViewById(R.id.btn_tool_erase);
+		buttonUndo = (Button) findViewById(R.id.btn_tool_undo);
+		buttonRedo = (Button) findViewById(R.id.btn_tool_redo);
 
 		toolButtons = new ArrayList<View>();
-		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase);
+		Collections.addAll(toolButtons, buttonColor, buttonBrush, buttonMove, buttonFill, buttonErase, buttonUndo,
+				buttonRedo);
 
 		setSelectedBackground(buttonBrush);
 
@@ -169,7 +174,12 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 			paintView.setPaintColor(Color.TRANSPARENT);
 			setSelectedBackground(buttonErase);
 			break;
-		default:
+		case R.id.btn_tool_undo:
+			paintView.undo();
+			break;
+		case R.id.btn_tool_redo:
+			paintView.redo();
+			break;
 		}
 	}
 
@@ -210,7 +220,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 				cursor.moveToFirst();
 
 				int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-				final String filePath = cursor.getString(columnIndex);
+				final File imageFile = new File(cursor.getString(columnIndex));
 				cursor.close();
 
 				String loadMessge = getResources().getString(R.string.dialog_load);
@@ -218,7 +228,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 				Thread thread = new Thread() {
 					@Override
 					public void run() {
-						Bitmap bitmap = Utils.decodeFile(TpMainActivity.this, new File(filePath));
+						Bitmap bitmap = Utils.decodeFile(TpMainActivity.this, imageFile);
 						paintView.setBitmap(bitmap);
 						load.dismiss();
 					}
