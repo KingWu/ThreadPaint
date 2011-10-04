@@ -85,9 +85,9 @@ public class CommandManager {
 	 * @param canvas Canvas to draw the command onto, typically is associated with a Bitmap.
 	 */
 	public synchronized void commitCommand(Command command, Canvas canvas) {
-		// Push the command into the queue to be executed by the internal Thread.
 		command.setCanvas(canvas);
 		command.run(); // do on ui thread, no queue
+		// Push the command into the queue to be executed by the internal Thread.
 		// synchronized (commandQueue) {
 		// commandQueue.addFirst(command);
 		// commandQueue.notify();

@@ -422,13 +422,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	void undo() {
-		synchronized (lock) { // do on ui thread
+		synchronized (lock) {
 			commandManager.undoLast(bitmapCanvas);
 		}
 	}
 
 	void redo() {
-		synchronized (lock) { // do on ui thread
+		synchronized (lock) {
 			commandManager.redoLast(bitmapCanvas);
 		}
 	}
