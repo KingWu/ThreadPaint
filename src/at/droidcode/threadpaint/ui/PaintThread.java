@@ -108,6 +108,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	@Override
 	public void run() {
+		commandManager.start();
 		while (keepRunning) {
 			Canvas canvas = null;
 			try {

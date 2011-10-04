@@ -5,7 +5,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
 
-public class Command {
+public class Command implements Runnable {
+	private Canvas cmdCanvas;
 	private final Paint cmdPaint;
 	private final Path cmdPath;
 	private final Point cmdPoint;
@@ -45,18 +46,27 @@ public class Command {
 		cmdPoint = null;
 	}
 
-	/**
-	 * Draws the Path or Point on a Canvas.
-	 * 
-	 * @param canvas Canvas to draw on, typically is associated with a Bitmap.
-	 */
-	void draw(Canvas canvas) {
+	void setCanvas(Canvas canvas) {
+		cmdCanvas = canvas;
+	}
+
+	@Override
+	public void run() {
 		if (cmdPath != null) {
-			canvas.drawPath(cmdPath, cmdPaint);
+			cmdCanvas.drawPath(cmdPath, cmdPaint);
 		} else if (cmdPoint != null) {
-			canvas.drawPoint(cmdPoint.x, cmdPoint.y, cmdPaint);
+			cmdCanvas.drawPoint(cmdPoint.x, cmdPoint.y, cmdPaint);
 		} else {
-			canvas.drawPaint(cmdPaint);
+			cmdCanvas.drawPaint(cmdPaint);
 		}
 	}
+
+	// /**
+	// * Draws the Path or Point on a Canvas.
+	// *
+	// * @param canvas Canvas to draw on, typically is associated with a Bitmap.
+	// */
+	// private void draw(Canvas canvas) {
+	//
+	// }
 }
