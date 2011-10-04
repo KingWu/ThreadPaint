@@ -58,6 +58,10 @@ public class CommandManager {
 	}
 
 	public void stop() {
+		originalBitmap.recycle();
+		originalBitmap = null;
+		commandStack.clear();
+		commandIndex = 0;
 		running = false;
 	}
 

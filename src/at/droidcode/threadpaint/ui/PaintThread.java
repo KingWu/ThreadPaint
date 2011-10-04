@@ -48,11 +48,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Object lock = new Object();
 	private final CommandManager commandManager;
 
-	private volatile boolean keepRunning;
-	private volatile boolean isPaused;
+	private boolean keepRunning;
+	private boolean isPaused;
 
-	private volatile Path pathToDraw;
 	private Bitmap drawingBitmap;
+	private final Path pathToDraw;
 	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
@@ -131,6 +131,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 				}
 			}
 		}
+		commandManager.stop();
 		drawingBitmap.recycle();
 		drawingBitmap = null;
 	}
@@ -209,14 +210,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	void setSurfaceSize(int width, int height) {
 		synchronized (lock) {
 			rectSurface.set(0, 0, width, height);
-			if (rectBitmap.isEmpty()) {
-				rectBitmap.set(0, 0, width, height);
-			}
 			// Initial Bitmap provided by PaintView.
 			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
 				drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
+				rectBitmap.set(0, 0, drawingBitmap.getWidth(), drawingBitmap.getHeight());
 				bitmapCanvas.setBitmap(drawingBitmap);
-
 				commandManager.reset(drawingBitmap);
 			}
 		}
@@ -314,13 +312,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
 		synchronized (lock) {
-			translate(x1, y1);
-			float xx1 = translate.x;
-			float yy1 = translate.y;
+			translate((x1 + x2) / 2f, (y1 + y2) / 2f);
+			float cx = translate.x;
+			float cy = translate.y;
 			translate(x2, y2);
-			float cx = (xx1 + translate.x) / 2;
-			float cy = (yy1 + translate.y) / 2;
-			pathToDraw.quadTo(xx1, yy1, cx, cy);
+			pathToDraw.quadTo(cx, cy, translate.x, translate.y);
 		}
 	}
 
