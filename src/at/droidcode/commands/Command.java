@@ -60,13 +60,4 @@ public class Command implements Runnable {
 			cmdCanvas.drawPaint(cmdPaint);
 		}
 	}
-
-	// /**
-	// * Draws the Path or Point on a Canvas.
-	// *
-	// * @param canvas Canvas to draw on, typically is associated with a Bitmap.
-	// */
-	// private void draw(Canvas canvas) {
-	//
-	// }
 }

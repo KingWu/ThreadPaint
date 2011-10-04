@@ -108,7 +108,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 
 	@Override
 	public void run() {
-		commandManager.start();
+		// commandManager.start();
 		while (keepRunning) {
 			Canvas canvas = null;
 			try {
@@ -334,18 +334,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		}
 	}
 
-	void undo() {
-		synchronized (lock) {
-			commandManager.undoLast(bitmapCanvas);
-		}
-	}
-
-	void redo() {
-		synchronized (lock) {
-			commandManager.redoLast(bitmapCanvas);
-		}
-	}
-
 	/**
 	 * Translate the Canvas by a given offset.
 	 * 
@@ -430,6 +418,18 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			bitmapCanvas.setBitmap(drawingBitmap);
 
 			commandManager.reset(drawingBitmap);
+		}
+	}
+
+	void undo() {
+		synchronized (lock) { // do on ui thread
+			commandManager.undoLast(bitmapCanvas);
+		}
+	}
+
+	void redo() {
+		synchronized (lock) { // do on ui thread
+			commandManager.redoLast(bitmapCanvas);
 		}
 	}
 }
