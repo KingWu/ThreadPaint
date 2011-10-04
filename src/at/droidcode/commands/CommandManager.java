@@ -1,8 +1,6 @@
 package at.droidcode.commands;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedList;
 
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
@@ -11,15 +9,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.util.Log;
-import at.droidcode.threadpaint.TpApplication;
 
 public class CommandManager {
 	private int commandIndex;
 	private Bitmap originalBitmap;
 
 	private final Paint transparencyPaint;
-	private final List<Command> commandStack;
+	private final LinkedList<Command> commandStack;
 
 	/**
 	 * Enables undo and redo actions via a stack of commands that are applied to an original Bitmap
@@ -29,7 +25,7 @@ public class CommandManager {
 	 */
 	public CommandManager() {
 		commandIndex = 0;
-		commandStack = Collections.synchronizedList(new ArrayList<Command>());
+		commandStack = new LinkedList<Command>();
 
 		transparencyPaint = new Paint();
 		transparencyPaint.setColor(Color.TRANSPARENT);
@@ -51,7 +47,8 @@ public class CommandManager {
 	}
 
 	/**
-	 * Draw the Command on a Canvas and push it on the command stack.
+	 * Apply the Command to the supplied Canvas and push it on the command stack. Any undone
+	 * commands one the command stack will be discarded.
 	 * 
 	 * @param command Command to draw and save.
 	 * @param canvas Canvas to draw the command onto, typically is associated with a Bitmap.
@@ -59,24 +56,20 @@ public class CommandManager {
 	public void commitCommand(Command command, Canvas canvas) {
 		command.draw(canvas);
 		if (commandIndex < commandStack.size()) {
-			Log.w(TpApplication.TAG, "discard old commands stacksize:" + commandStack.size() + " cmdIdx:"
-					+ commandIndex);
-			// Some commands have been undone, remove them from the stack first.
+			// Remove remaining undone commands from the stack first.
 			for (int i = commandStack.size(); i > commandIndex; i--) {
-				commandStack.remove(commandStack.size() - 1);
-				Log.w(TpApplication.TAG, "discard " + i);
+				commandStack.removeLast();
 			}
 		}
 		commandIndex++;
 		commandStack.add(command);
-		Log.w(TpApplication.TAG, "new command stacksize:" + commandStack.size() + " cmdIdx:" + commandIndex);
 	}
 
 	/**
-	 * Undos the last action as indicated by the command index by applying all commands from 0 to
-	 * the current command index to a Canvas.
+	 * Undos the last action as indicated by the command index by redrawing the original Bitmap and
+	 * applying all commands from 0 to the current command index to the supplied Canvas.
 	 * 
-	 * @param canvas Canvas to apply commands to.
+	 * @param canvas Canvas to apply commands to, typically is associated with a Bitmap.
 	 */
 	public void undoLast(Canvas canvas) {
 		if (commandIndex > 0) {
@@ -87,19 +80,18 @@ public class CommandManager {
 			for (int i = 0; i < commandIndex; i++) {
 				commandStack.get(i).draw(canvas);
 			}
-			Log.w(TpApplication.TAG, "undo stacksize:" + commandStack.size() + " cmdIdx:" + commandIndex);
-		} else {
-			Log.w(TpApplication.TAG, "cannot undo anymore stacksize:" + commandStack.size() + " cmdIdx:" + commandIndex);
 		}
 	}
 
+	/**
+	 * Redos the last undone action from the command stack.
+	 * 
+	 * @param canvas Canvas to apply commands to, typically is associated with a Bitmap.
+	 */
 	public void redoLast(Canvas canvas) {
 		if (commandIndex < commandStack.size()) {
 			commandStack.get(commandIndex).draw(canvas);
 			commandIndex++;
-			Log.w(TpApplication.TAG, "redo stacksize:" + commandStack.size() + " cmdIdx:" + commandIndex);
-		} else {
-			Log.w(TpApplication.TAG, "cannot redo anymore stacksize:" + commandStack.size() + " cmdIdx:" + commandIndex);
 		}
 	}
 }
