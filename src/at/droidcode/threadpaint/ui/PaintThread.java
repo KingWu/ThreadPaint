@@ -252,7 +252,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
-			zoom = 1;
+			zoom = 1f;
 			scroll.set(0, 0);
 			drawingBitmap = bitmap;
 			bitmapCanvas.setBitmap(drawingBitmap);
@@ -410,7 +410,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 */
 	void resetCanvas() {
 		synchronized (lock) {
-			zoom = 1;
+			zoom = 1f;
 			scroll.set(0, 0);
 			bitmapCanvas.drawPaint(transparencyPaint);
 			rectBitmap.set(0, 0, rectSurface.right, rectSurface.bottom);
