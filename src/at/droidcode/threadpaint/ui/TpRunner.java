@@ -27,7 +27,7 @@ import at.droidcode.threadpaint.TpApplication;
  * Wrapper for a Thread executing an arbitrary Runnable.
  */
 public class TpRunner {
-	protected final Thread pThread;
+	protected final Thread pThread; // let subclasses synchronize on this monitor
 	private Runnable pRunnable;
 	private boolean running;
 	private boolean paused;

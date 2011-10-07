@@ -82,6 +82,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		super.setRunnable(new DrawLoop());
 
 		pathToDraw = new Path();
+		pathToDraw.incReserve(42); // might be more efficient
 		bitmapCanvas = new Canvas();
 		rectSurface = new Rect();
 		rectBitmap = new Rect();
