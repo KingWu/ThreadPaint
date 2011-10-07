@@ -21,8 +21,10 @@ import java.util.LinkedList;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
-import at.droidcode.threadpaint.Utils;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 
 public class CommandManager {
 	private Bitmap originalBitmap;
@@ -40,15 +42,20 @@ public class CommandManager {
 	public CommandManager() {
 		commandIndex = 0;
 		commandStack = new LinkedList<Command>();
-		transparencyPaint = Utils.newTransparencyPaint();
+
+		transparencyPaint = new Paint();
+		transparencyPaint.setColor(Color.TRANSPARENT);
+		transparencyPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 	}
 
 	/**
 	 * Clear Bitmap and command stack.
 	 */
 	public void clear() {
-		originalBitmap.recycle();
-		originalBitmap = null;
+		if (originalBitmap != null) {
+			originalBitmap.recycle();
+			originalBitmap = null;
+		}
 		commandStack.clear();
 		commandIndex = 0;
 	}

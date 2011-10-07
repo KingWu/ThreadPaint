@@ -31,10 +31,6 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.os.Environment;
 import android.util.Log;
 import android.util.TypedValue;
@@ -157,12 +153,5 @@ public final class Utils {
 		public void run() {
 			Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
 		}
-	}
-
-	public static Paint newTransparencyPaint() {
-		Paint transparencyPaint = new Paint();
-		transparencyPaint.setColor(Color.TRANSPARENT);
-		transparencyPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
-		return transparencyPaint;
 	}
 }

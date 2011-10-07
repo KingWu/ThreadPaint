@@ -17,6 +17,7 @@
 package at.droidcode.threadpaint.ui;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -30,12 +31,12 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Xfermode;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import at.droidcode.commands.Command;
 import at.droidcode.commands.CommandManager;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.TpApplication;
-import at.droidcode.threadpaint.Utils;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
@@ -55,7 +56,6 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to draw onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
-	private final Paint transparencyPaint;
 	private final Xfermode eraseXfermode;
 	private final SurfaceHolder surfaceHolder;
 	private final CommandManager commandManager;
@@ -108,8 +108,6 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		checkeredPattern.setShader(shader);
 
 		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
-
-		transparencyPaint = Utils.newTransparencyPaint();
 	}
 
 	/**
@@ -171,8 +169,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap as big as
-	 * the surface.
+	 * Called by the SurfaceView on surfaceChanged(). Creates a new surface sized bitmap if it is
+	 * still null.
 	 * 
 	 * @param width Width of the SurfaceView.
 	 * @param height Height of the SurfaceView.
@@ -180,11 +178,12 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	 */
 	void setSurfaceSize(int width, int height) {
 		synchronized (pThread) {
+			resetPerspective();
 			rectSurface.set(0, 0, width, height);
-			// Initial Bitmap provided by PaintView.
-			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
-				drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, width, height, false);
-				rectBitmap.set(0, 0, drawingBitmap.getWidth(), drawingBitmap.getHeight());
+			if (drawingBitmap == null) {
+				Log.w(TpApplication.TAG, "Creating new bitmap of surface size.");
+				drawingBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
+				rectBitmap.set(0, 0, width, height);
 				bitmapCanvas.setBitmap(drawingBitmap);
 				commandManager.reset(drawingBitmap);
 			}
@@ -201,8 +200,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
-			zoom = 1f;
-			scroll.set(0, 0);
+			resetPerspective();
 			drawingBitmap = bitmap;
 			commandManager.reset(bitmap);
 			bitmapCanvas.setBitmap(drawingBitmap);
@@ -345,6 +343,13 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		return translate;
 	}
 
+	// It's essential to set the canvas matrix null!
+	private void resetPerspective() {
+		zoom = 1f;
+		scroll.set(0, 0);
+		bitmapCanvas.setMatrix(null);
+	}
+
 	/**
 	 * Draw the currently used Paint on the whole Bitmap.
 	 */
@@ -355,20 +360,11 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Reset the Canvas with an empty, transparent Bitmap of surface size. Also reset scroll and
-	 * zoom values.
+	 * Reset the Canvas by setting a new empty bitmap of surface size.
 	 */
 	void resetCanvas() {
-		synchronized (pThread) {
-			zoom = 1f;
-			scroll.set(0, 0);
-			bitmapCanvas.drawPaint(transparencyPaint);
-			rectBitmap.set(0, 0, rectSurface.right, rectSurface.bottom);
-			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, rectSurface.right, rectSurface.bottom, false);
-
-			commandManager.reset(drawingBitmap);
-			bitmapCanvas.setBitmap(drawingBitmap);
-		}
+		Bitmap bitmap = Bitmap.createBitmap(rectSurface.right, rectSurface.bottom, Config.ARGB_8888);
+		setBitmap(bitmap);
 	}
 
 	/**

@@ -19,7 +19,6 @@ package at.droidcode.threadpaint.ui;
 import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Bitmap.Config;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -62,9 +61,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 		moveThreshold = 1.0f;
 
-		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		paintRunner = new PaintRunner(this);
-		paintRunner.setBitmap(bitmap);
 	}
 
 	@Override
@@ -98,11 +95,11 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * @param savedState Bundle containing saved attributes.
 	 */
 	public synchronized void restoreState(Bundle savedState) {
+		Log.d(TAG, "restore state");
 		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_BITMAP);
-		if (savedBmp.isRecycled()) {
-			savedBmp = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+		if (!savedBmp.isRecycled()) {
+			paintRunner.setBitmap(savedBmp);
 		}
-		paintRunner.setBitmap(savedBmp);
 	}
 
 	/**
@@ -157,7 +154,8 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	/**
 	 * @param bitmap The Bitmap to draw on.
 	 */
-	public void setBitmap(Bitmap bitmap) {
+	public synchronized void setBitmap(Bitmap bitmap) {
+		Log.d(TAG, "setBitmap");
 		paintRunner.setBitmap(bitmap);
 	}
 
