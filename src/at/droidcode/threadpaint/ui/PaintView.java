@@ -46,7 +46,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private float moveThreshold;
 	private final PaintRunner paintRunner;
 	private ToolButtonAnimator toolButtonAnimator;
-	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
+	private static final String STATE_BITMAP = "WORKING_BITMAP";
 
 	public PaintView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -91,14 +91,14 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	 * @param b Bundle to store attributes in.
 	 */
 	public synchronized void saveState(Bundle b) {
-		b.putParcelable(STATE_WORKING_BITMAP, getBitmap());
+		b.putParcelable(STATE_BITMAP, getBitmap());
 	}
 
 	/**
 	 * @param savedState Bundle containing saved attributes.
 	 */
 	public synchronized void restoreState(Bundle savedState) {
-		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
+		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_BITMAP);
 		if (savedBmp.isRecycled()) {
 			savedBmp = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
 		}
