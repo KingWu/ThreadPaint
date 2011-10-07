@@ -87,13 +87,13 @@ public final class Utils {
 			BitmapFactory.decodeStream(new FileInputStream(f), null, o);
 
 			// The new size we want to scale to
-			final int REQUIRED_SIZE = 70;
+			final int REQUIRED_SIZE = 1024;
 
 			// Find the correct scale value. It should be the power of 2.
 			int tmpWidth = o.outWidth, tmpHeight = o.outHeight;
 			int scale = 1;
 
-			while (tmpWidth / 2 < REQUIRED_SIZE || tmpHeight / 2 < REQUIRED_SIZE) {
+			while (tmpWidth / 2 > REQUIRED_SIZE || tmpHeight / 2 > REQUIRED_SIZE) {
 				tmpWidth /= 2;
 				tmpHeight /= 2;
 				scale *= 2;
