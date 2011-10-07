@@ -55,7 +55,10 @@ public class CommandManager {
 	// }
 	// }
 
-	public void stop() {
+	/**
+	 * Clear Bitmap and command stack.
+	 */
+	public void clear() {
 		originalBitmap.recycle();
 		originalBitmap = null;
 		commandStack.clear();

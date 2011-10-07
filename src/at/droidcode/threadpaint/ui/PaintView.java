@@ -62,8 +62,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		moveThreshold = 1.0f;
 
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-		paintThread = new PaintThread(this, bitmap);
+		paintThread = new PaintThread(this);
 		paintThread.setDaemon(true);
+		paintThread.setBitmap(bitmap);
 	}
 
 	@Override
@@ -115,9 +116,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		if (paintThread != null) {
 			terminatePaintThread();
 		}
-		Bitmap saved = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
-		paintThread = new PaintThread(this, saved);
+		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
+		paintThread = new PaintThread(this);
 		paintThread.setDaemon(true);
+		paintThread.setBitmap(savedBmp);
 	}
 
 	/**
@@ -283,7 +285,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			break;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
-				paintThread.drawPathOnBitmap();
+				paintThread.finishPath();
 			} else {
 				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}

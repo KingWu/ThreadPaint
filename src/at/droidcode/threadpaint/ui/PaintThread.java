@@ -46,7 +46,6 @@ import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener,
 		BrushPickerDialog.OnBrushChangedListener {
 	private final Object lock = new Object();
-	private final CommandManager commandManager;
 
 	private boolean keepRunning;
 	private boolean isPaused;
@@ -59,15 +58,15 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Point scroll;
 	float zoom;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
-	private final Paint canvasPathPaint; // only to drawi onto the Canvas of the PaintView
+	private final Paint canvasPathPaint; // only to draw onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
 	private final Paint transparencyPaint;
 	private final Xfermode eraseXfermode;
 	private final SurfaceHolder surfaceHolder;
+	private final CommandManager commandManager;
 
-	public PaintThread(PaintView paintView, Bitmap bitmap) {
+	public PaintThread(PaintView paintView) {
 		surfaceHolder = paintView.getHolder();
-		drawingBitmap = bitmap;
 
 		commandManager = new CommandManager();
 
@@ -75,7 +74,6 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		isPaused = false;
 		pathToDraw = new Path();
 		bitmapCanvas = new Canvas();
-		bitmapCanvas.setBitmap(drawingBitmap);
 		rectSurface = new Rect();
 		rectBitmap = new Rect();
 		scroll = new Point(0, 0);
@@ -131,38 +129,21 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 				}
 			}
 		}
-		commandManager.stop();
+		commandManager.clear();
 		drawingBitmap.recycle();
 		drawingBitmap = null;
 	}
 
-	private boolean drawPathOnBitmap = false;
-
 	/**
-	 * Causes the Thread to draw the pathToDraw onto the Bitmap instead of the Canvas during the
-	 * next pass.
-	 */
-	void drawPathOnBitmap() {
-		drawPathOnBitmap = true;
-	}
-
-	/**
-	 * After the checkered background pattern the finished Path is drawn onto the Bitmap if
-	 * necessary. Then the Bitmap and finally a still open Path are drawn onto the given Canvas.
+	 * Called in the loop to transform the canvas, draw the background, bitmap and the unfinished
+	 * path.
 	 * 
-	 * @param canvas External Canvas onto which the thread draws.
+	 * @param canvas SurfaceHolder's Canvas onto which the thread draws.
 	 */
 	private void doDraw(Canvas canvas) {
 		canvas.scale(zoom, zoom);
 		canvas.translate(scroll.x, scroll.y);
 		canvas.drawPaint(checkeredPattern);
-		if (drawPathOnBitmap) {
-			Command command = new Command(bitmapPathPaint, pathToDraw);
-			commandManager.commitCommand(command, bitmapCanvas);
-
-			pathToDraw.rewind();
-			drawPathOnBitmap = false;
-		}
 		canvas.drawBitmap(drawingBitmap, null, rectBitmap, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
@@ -255,10 +236,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			zoom = 1f;
 			scroll.set(0, 0);
 			drawingBitmap = bitmap;
+			commandManager.reset(bitmap);
 			bitmapCanvas.setBitmap(drawingBitmap);
 			rectBitmap.set(0, 0, bitmap.getWidth(), bitmap.getHeight());
-
-			commandManager.reset(bitmap);
 		}
 	}
 
@@ -283,6 +263,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		return bitmapPathPaint;
 	}
 
+	/**
+	 * @return Current zoom level [1.0..*].
+	 */
 	float getZoom() {
 		return zoom;
 	}
@@ -317,6 +300,17 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			float cy = translate.y;
 			translate(x2, y2);
 			pathToDraw.quadTo(cx, cy, translate.x, translate.y);
+		}
+	}
+
+	/**
+	 * Draw the currently unfinished Path on the Bitmap and rewind it.
+	 */
+	void finishPath() {
+		synchronized (lock) {
+			Command command = new Command(bitmapPathPaint, pathToDraw);
+			commandManager.commitCommand(command, bitmapCanvas);
+			pathToDraw.rewind();
 		}
 	}
 
@@ -415,9 +409,9 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 			bitmapCanvas.drawPaint(transparencyPaint);
 			rectBitmap.set(0, 0, rectSurface.right, rectSurface.bottom);
 			drawingBitmap = Bitmap.createScaledBitmap(drawingBitmap, rectSurface.right, rectSurface.bottom, false);
-			bitmapCanvas.setBitmap(drawingBitmap);
 
 			commandManager.reset(drawingBitmap);
+			bitmapCanvas.setBitmap(drawingBitmap);
 		}
 	}
 
