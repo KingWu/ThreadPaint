@@ -44,7 +44,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 	private Tool selectedTool;
 	private float moveThreshold;
-	private final PaintThread paintThread;
+	private final PaintRunner paintRunner;
 	private ToolButtonAnimator toolButtonAnimator;
 	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
 
@@ -63,142 +63,151 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		moveThreshold = 1.0f;
 
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
-		paintThread = new PaintThread(this);
-		// paintThread.setDaemon(true);
-		paintThread.setBitmap(bitmap);
+		paintRunner = new PaintRunner(this);
+		paintRunner.setBitmap(bitmap);
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		Log.w(TAG, "surfaceChanged");
-		paintThread.setSurfaceSize(width, height);
+		paintRunner.setSurfaceSize(width, height);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
-		paintThread.start();
+		paintRunner.start();
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceDestroyed");
-		paintThread.setPaused(true);
+		paintRunner.setPaused(true);
 	}
 
 	/**
 	 * Invokes getBitmap() to store a copy of the current Bitmap in the indicated Bundle.
 	 * 
-	 * @param b Bundle to store attributes in
+	 * @param b Bundle to store attributes in.
 	 */
 	public synchronized void saveState(Bundle b) {
 		b.putParcelable(STATE_WORKING_BITMAP, getBitmap());
 	}
 
 	/**
-	 * @param savedState Bundle containing saved attributes
+	 * @param savedState Bundle containing saved attributes.
 	 */
 	public synchronized void restoreState(Bundle savedState) {
 		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
 		if (savedBmp.isRecycled()) {
 			savedBmp = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
 		}
-		paintThread.setBitmap(savedBmp);
+		paintRunner.setBitmap(savedBmp);
 	}
 
 	/**
 	 * Typically called when ThreadPaintActivity is being destroyed.
 	 */
 	public void stopPaintThread() {
-		paintThread.stop();
+		paintRunner.stop();
 	}
 
 	/**
-	 * @param animator Object that animates the tool buttons
+	 * @param animator Object that animates the tool buttons.
 	 */
 	public void setToolButtonAnimator(ToolButtonAnimator animator) {
 		toolButtonAnimator = animator;
 	}
 
 	/**
-	 * @param f Distance a user must drag her finger to create a path
+	 * @param f Distance a user must drag her finger to create a path.
 	 */
 	public void setMoveThreshold(float f) {
 		moveThreshold = f;
 	}
 
+	/**
+	 * @return Currently selected Tool.
+	 */
 	public Tool selectedTool() {
 		return selectedTool;
 	}
 
+	/**
+	 * @param tool Tool to use.
+	 */
 	public void selectTool(Tool tool) {
 		selectedTool = tool;
 	}
 
 	/**
-	 * @return Actual Bitmap that is drawn onto, a copy might be to big.
+	 * @return Actual Bitmap that is drawn onto, a copy might be too big.
 	 */
 	public Bitmap getBitmap() {
-		return paintThread.getBitmap();
+		return paintRunner.getBitmap();
 	}
 
 	/**
-	 * @return Paint the PaintThread is drawing the path with
+	 * @return Paint currently in use.
 	 */
 	public Paint getPathPaint() {
-		return paintThread.getPaint();
+		return paintRunner.getPaint();
 	}
 
 	/**
-	 * Set the Bitmap for the PaintThread to draw.
-	 * 
-	 * @param bitmap The Bitmap the PaintThread will draw.
+	 * @param bitmap The Bitmap to draw on.
 	 */
 	public void setBitmap(Bitmap bitmap) {
-		paintThread.setBitmap(bitmap);
+		paintRunner.setBitmap(bitmap);
 	}
 
 	/**
 	 * @param color Color used to draw on the Bitmap.
 	 */
 	public void setPaintColor(int color) {
-		paintThread.colorChanged(color);
+		paintRunner.colorChanged(color);
 	}
 
 	/**
 	 * Fill the Bitmap with the currently used paint (and color).
 	 */
 	public void fillWithPaint() {
-		paintThread.fillWithPaint();
+		paintRunner.fillWithPaint();
 	}
 
 	/**
 	 * Create an empty new Canvas with reset perspective.
 	 */
 	public void resetCanvas() {
-		paintThread.resetCanvas();
-	}
-
-	public void undo() {
-		paintThread.undo();
-	}
-
-	public void redo() {
-		paintThread.redo();
+		paintRunner.resetCanvas();
 	}
 
 	/**
-	 * @return OnPaintChangedListener, usually the PaintThread
+	 * Undo one step.
+	 */
+	public void undo() {
+		paintRunner.undo();
+	}
+
+	/**
+	 * Redo one step.
+	 */
+	public void redo() {
+		paintRunner.redo();
+	}
+
+	/**
+	 * @return OnPaintChangedListener, usually the PaintRunner.
 	 */
 	public OnPaintChangedListener getOnPaintChangedListener() {
-		return paintThread;
+		return paintRunner;
 	}
 
 	/**
-	 * @return OnBrushChangedListener, usually the PaintThread
+	 * @return OnBrushChangedListener, usually the PaintRunner.
 	 */
 	public OnBrushChangedListener getOnBrushChangedListener() {
-		return paintThread;
+		return paintRunner;
 	}
 
 	private float xTouchCoordinate;
@@ -240,23 +249,25 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		return true;
 	}
 
+	/**
+	 * Draw path or point.
+	 */
 	private void handleBrushTool(MotionEvent event) {
-
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			paintThread.startPath(xTouchCoordinate, yTouchCoordinate);
+			paintRunner.startPath(xTouchCoordinate, yTouchCoordinate);
 			toolButtonAnimator.fadeOutToolButtons();
 			break;
 		case MotionEvent.ACTION_MOVE:
 			if (hasMoved) {
-				paintThread.updatePath(previousX, previousY, xTouchCoordinate, yTouchCoordinate);
+				paintRunner.updatePath(previousX, previousY, xTouchCoordinate, yTouchCoordinate);
 			}
 			break;
 		case MotionEvent.ACTION_UP:
 			if (hasMoved) {
-				paintThread.finishPath();
+				paintRunner.finishPath();
 			} else {
-				paintThread.drawPoint(xTouchCoordinate, yTouchCoordinate);
+				paintRunner.drawPoint(xTouchCoordinate, yTouchCoordinate);
 			}
 			toolButtonAnimator.fadeInToolButtons();
 			break;
@@ -266,17 +277,22 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private boolean pinchToZoom;
 	private float oldDist;
 
+	/**
+	 * @return Distance between two points.
+	 */
 	private float spacing(MotionEvent event) {
 		float x = event.getX(0) - event.getX(1);
 		float y = event.getY(0) - event.getY(1);
 		return FloatMath.sqrt(x * x + y * y);
 	}
 
+	/**
+	 * Pinch to zoom or scroll.
+	 */
 	private void handleMoveTool(MotionEvent event) {
-
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_POINTER_2_DOWN:
-			oldDist = spacing(event) / paintThread.getZoom();
+			oldDist = spacing(event) / paintRunner.getZoom();
 			pinchToZoom = true;
 			break;
 		case MotionEvent.ACTION_MOVE:
@@ -284,12 +300,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 				float newDist = spacing(event);
 				if (newDist > 10) {
 					float scale = newDist / oldDist;
-					paintThread.zoom(scale);
+					paintRunner.zoom(scale);
 				}
 			} else {
 				int dx = Math.round(xTouchCoordinate - previousX);
 				int dy = Math.round(yTouchCoordinate - previousY);
-				paintThread.scroll(dx, dy);
+				paintRunner.scroll(dx, dy);
 			}
 			break;
 		default:
