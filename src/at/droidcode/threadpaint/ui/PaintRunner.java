@@ -35,9 +35,13 @@ import at.droidcode.commands.Command;
 import at.droidcode.commands.CommandManager;
 import at.droidcode.threadpaint.R;
 import at.droidcode.threadpaint.TpApplication;
+import at.droidcode.threadpaint.Utils;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
+/**
+ * Draws Paint on the PaintView's surface using a Thread.
+ */
 public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintChangedListener,
 		BrushPickerDialog.OnBrushChangedListener {
 
@@ -102,11 +106,9 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
 
-		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR); // SRC_OUT
+		eraseXfermode = new PorterDuffXfermode(PorterDuff.Mode.CLEAR);
 
-		transparencyPaint = new Paint();
-		transparencyPaint.setColor(Color.TRANSPARENT);
-		transparencyPaint.setXfermode(eraseXfermode);
+		transparencyPaint = Utils.newTransparencyPaint();
 	}
 
 	/**
@@ -121,8 +123,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Called in the loop to transform the canvas, draw the background, bitmap and the unfinished
-	 * path.
+	 * Called by the Thread to transform the canvas, draw the background, bitmap and the unfinished
+	 * Path.
 	 * 
 	 * @param canvas SurfaceHolder's Canvas onto which the thread draws.
 	 */
@@ -149,6 +151,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 			canvasPathPaint.setStrokeWidth(bitmapPathPaint.getStrokeWidth());
 			canvasPathPaint.setShader(checkeredPattern.getShader());
 		} else {
+			// draw with normal paint again
 			bitmapPathPaint.setXfermode(null);
 			canvasPathPaint.set(bitmapPathPaint);
 		}
@@ -167,8 +170,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap actually
-	 * as big as the screen.
+	 * Called by the SurfaceView on surfaceChanged(). Important to make the inital bitmap as big as
+	 * the surface.
 	 * 
 	 * @param width Width of the SurfaceView.
 	 * @param height Height of the SurfaceView.
@@ -188,9 +191,9 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Sets a new Bitmap and recycles the old one.
+	 * Sets a new Bitmap and recycles the old one. Alsor resets values for zoom and scroll.
 	 * 
-	 * @param bitmap New Bitmap to draw
+	 * @param bitmap New Bitmap to draw.
 	 */
 	void setBitmap(Bitmap bitmap) {
 		synchronized (pThread) {
@@ -214,14 +217,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * @return Path the thread draws onto the Canvas (Bitmap).
-	 */
-	Path getPath() {
-		return pathToDraw;
-	}
-
-	/**
-	 * @return Paint the thread uses to draw a path onto the Bitmap.
+	 * @return Paint used to draw on the Bitmap.
 	 */
 	Paint getPaint() {
 		return bitmapPathPaint;
@@ -247,13 +243,12 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Continue and interpolate a started path from the previous to the new coordinates on the
-	 * Bitmap.
+	 * Continue an unfinished path from the previous to the new coordinates on the Bitmap.
 	 * 
-	 * @param x1 Previous X-Coordinate on the Bitmap.
-	 * @param y1 Previous Y-Coordinate on the Bitmap.
-	 * @param x2 New X-Coordinate on the Bitmap.
-	 * @param y2 New Y-Coordinate on the Bitmap.
+	 * @param x1 Previous X-Coordinate on the Screen.
+	 * @param y1 Previous Y-Coordinate on the Screen.
+	 * @param x2 New X-Coordinate on the Screen.
+	 * @param y2 New Y-Coordinate on the Screen.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
 		translate((x1 + x2) / 2f, (y1 + y2) / 2f);
@@ -275,10 +270,10 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Draws a point at the specified coordinates on the Bitmap.
+	 * Draw a point at the specified screen coordinates translated to the Bitmap.
 	 * 
-	 * @param x X-Coordinate of the point
-	 * @param y Y-Coordinate of the point
+	 * @param x X-Coordinate of the point on the Screen.
+	 * @param y Y-Coordinate of the point on the Screen.
 	 */
 	void drawPoint(float x, float y) {
 		synchronized (pThread) {
@@ -291,8 +286,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	/**
 	 * Translate the Canvas by a given offset.
 	 * 
-	 * @param dx Offset on the x-axis
-	 * @param dy Offset on the y-axis
+	 * @param dx Offset on the x-axis.
+	 * @param dy Offset on the y-axis.
 	 */
 	void scroll(int dx, int dy) {
 		synchronized (pThread) {
@@ -325,9 +320,9 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Sets the zoom factor for the Canvas.
+	 * Set the zoom factor for the Canvas.
 	 * 
-	 * @param scale (1..*) Factor to zoom
+	 * @param scale [1.0..*] Factor to zoom.
 	 */
 	void zoom(float scale) {
 		synchronized (pThread) {
@@ -350,7 +345,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	}
 
 	/**
-	 * Draw the currently used paint over the whole Canvas (Bitmap).
+	 * Draw the currently used Paint on the whole Bitmap.
 	 */
 	void fillWithPaint() {
 		// bitmapCanvas.drawPaint(bitmapPathPaint);
@@ -375,12 +370,18 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		}
 	}
 
+	/**
+	 * Undo one step in the command manager.
+	 */
 	void undo() {
 		synchronized (pThread) {
 			commandManager.undoLast(bitmapCanvas);
 		}
 	}
 
+	/**
+	 * Redo one step in the command manager.
+	 */
 	void redo() {
 		synchronized (pThread) {
 			commandManager.redoLast(bitmapCanvas);
