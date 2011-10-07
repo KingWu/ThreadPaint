@@ -1,6 +1,9 @@
 package at.droidcode.threadpaint.ui;
 
 import static at.droidcode.threadpaint.TpApplication.TAG;
+
+import java.lang.Thread.State;
+
 import android.util.Log;
 import at.droidcode.threadpaint.TpApplication;
 
@@ -10,6 +13,9 @@ public class TpRunner {
 	private boolean running;
 	private boolean paused;
 
+	/**
+	 * Wrapper for a Thread executing an arbitrary Runnable.
+	 */
 	public TpRunner() {
 		pThread = new Thread(new InternalRunnable());
 		pThread.setDaemon(true);
@@ -22,6 +28,9 @@ public class TpRunner {
 		}
 	}
 
+	/**
+	 * Continously execute the Runnable.
+	 */
 	private void internalRun() {
 		while (running) {
 			synchronized (pThread) {
@@ -38,14 +47,21 @@ public class TpRunner {
 		}
 	}
 
+	/**
+	 * @param runnable Runnable to be executed by the internal Thread.
+	 */
 	public synchronized void setRunnable(Runnable runnable) {
 		pRunnable = runnable;
 	}
 
 	/**
-	 * Start the internal Thread or unpause it.
+	 * Start the internal Thread or unpause it. Does nothing if the Runnable was not set or the
+	 * internal Thread has already been stopped.
 	 */
 	public synchronized void start() {
+		if (pRunnable == null || pThread.getState().equals(State.TERMINATED)) {
+			return;
+		}
 		running = true;
 		if (paused) {
 			setPaused(false);
@@ -75,11 +91,11 @@ public class TpRunner {
 
 	/**
 	 * Cause the internal Thread to wait or resume. Passing false if the Thread is paused will call
-	 * notify() on the waiting lock.
+	 * notify() on the monitor.
 	 * 
 	 * @param pause true to pause drawing, false to resume
 	 */
-	public void setPaused(boolean pause) {
+	public synchronized void setPaused(boolean pause) {
 		synchronized (pThread) {
 			if (!pause && paused) {
 				pThread.notify();
