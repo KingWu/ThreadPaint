@@ -19,6 +19,7 @@ package at.droidcode.threadpaint.ui;
 import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -43,7 +44,7 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 	private Tool selectedTool;
 	private float moveThreshold;
-	private PaintThread paintThread;
+	private final PaintThread paintThread;
 	private ToolButtonAnimator toolButtonAnimator;
 	private static final String STATE_WORKING_BITMAP = "WORKING_BITMAP";
 
@@ -63,37 +64,26 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 
 		Bitmap bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
 		paintThread = new PaintThread(this);
-		paintThread.setDaemon(true);
+		// paintThread.setDaemon(true);
 		paintThread.setBitmap(bitmap);
 	}
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 		Log.w(TAG, "surfaceChanged");
-
 		paintThread.setSurfaceSize(width, height);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceCreated");
-
-		if (paintThread.isAlive()) {
-			paintThread.setPaused(false);
-		} else {
-			paintThread.setRunning(true);
-			paintThread.start();
-		}
+		paintThread.start();
 	}
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		Log.w(TAG, "surfaceDestroyed");
-
-		if (paintThread != null) {
-			Log.d(TAG, "setPaused true");
-			paintThread.setPaused(true);
-		}
+		paintThread.setPaused(true);
 	}
 
 	/**
@@ -106,42 +96,21 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * If paintThread is null a new thread with the Bitmap stored in the Bundle is created.
-	 * Typically called when ThreadPaintActivity is being restored after having been previously
-	 * destroyed and thus the thread was terminated.
-	 * 
 	 * @param savedState Bundle containing saved attributes
 	 */
 	public synchronized void restoreState(Bundle savedState) {
-		if (paintThread != null) {
-			terminatePaintThread();
-		}
 		Bitmap savedBmp = (Bitmap) savedState.getParcelable(STATE_WORKING_BITMAP);
-		paintThread = new PaintThread(this);
-		paintThread.setDaemon(true);
+		if (savedBmp.isRecycled()) {
+			savedBmp = Bitmap.createBitmap(1, 1, Config.ARGB_8888);
+		}
 		paintThread.setBitmap(savedBmp);
 	}
 
 	/**
-	 * Stops the PaintThread and nulls the reference. Typically called when ThreadPaintActivity is
-	 * being destroyed.
+	 * Typically called when ThreadPaintActivity is being destroyed.
 	 */
-	public synchronized void terminatePaintThread() {
-		Log.d(TAG, "terminatePaintThread");
-		if (paintThread.isAlive()) {
-			boolean retry = true;
-			paintThread.setRunning(false);
-			paintThread.setPaused(false);
-			while (retry) {
-				try {
-					paintThread.join();
-					retry = false;
-				} catch (InterruptedException e) {
-					Log.e(TAG, "ERROR ", e);
-				}
-			}
-		}
-		paintThread = null;
+	public void stopPaintThread() {
+		paintThread.stop();
 	}
 
 	/**

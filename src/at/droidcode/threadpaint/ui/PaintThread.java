@@ -16,7 +16,6 @@
 
 package at.droidcode.threadpaint.ui;
 
-import static at.droidcode.threadpaint.TpApplication.TAG;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
@@ -31,7 +30,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.Shader;
 import android.graphics.Xfermode;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import at.droidcode.commands.Command;
 import at.droidcode.commands.CommandManager;
@@ -40,15 +38,8 @@ import at.droidcode.threadpaint.TpApplication;
 import at.droidcode.threadpaint.dialog.BrushPickerDialog;
 import at.droidcode.threadpaint.dialog.ColorPickerDialog;
 
-/**
- * Continually draws a Path onto a Canvas which in turn is being drawn onto a SurfaceView.
- */
-public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChangedListener,
+public class PaintThread extends TpRunner implements ColorPickerDialog.OnPaintChangedListener,
 		BrushPickerDialog.OnBrushChangedListener {
-	private final Object lock = new Object();
-
-	private boolean keepRunning;
-	private boolean isPaused;
 
 	private Bitmap drawingBitmap;
 	private final Path pathToDraw;
@@ -56,7 +47,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
 	private final Point scroll;
-	float zoom;
+	private float zoom;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
 	private final Paint canvasPathPaint; // only to draw onto the Canvas of the PaintView
 	private final Paint checkeredPattern;
@@ -65,13 +56,27 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	private final SurfaceHolder surfaceHolder;
 	private final CommandManager commandManager;
 
+	private class DrawLoop implements Runnable {
+		@Override
+		public void run() {
+			Canvas canvas = null;
+			try {
+				canvas = surfaceHolder.lockCanvas();
+				doDraw(canvas);
+			} finally {
+				if (canvas != null) {
+					surfaceHolder.unlockCanvasAndPost(canvas);
+				}
+			}
+		}
+	}
+
 	public PaintThread(PaintView paintView) {
 		surfaceHolder = paintView.getHolder();
-
 		commandManager = new CommandManager();
 
-		keepRunning = false;
-		isPaused = false;
+		super.setRunnable(new DrawLoop());
+
 		pathToDraw = new Path();
 		bitmapCanvas = new Canvas();
 		rectSurface = new Rect();
@@ -104,31 +109,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 		transparencyPaint.setXfermode(eraseXfermode);
 	}
 
+	/**
+	 * Stop the internal Thread, clear the Command Manager and Bitmap.
+	 */
 	@Override
-	public void run() {
-		// commandManager.start();
-		while (keepRunning) {
-			Canvas canvas = null;
-			try {
-				synchronized (lock) {
-					canvas = surfaceHolder.lockCanvas();
-					doDraw(canvas);
-				}
-			} finally {
-				if (canvas != null) {
-					surfaceHolder.unlockCanvasAndPost(canvas);
-				}
-			}
-			synchronized (lock) {
-				if (isPaused) {
-					try {
-						lock.wait();
-					} catch (InterruptedException e) {
-						Log.e(TAG, "ERROR ", e);
-					}
-				}
-			}
-		}
+	public synchronized void stop() {
+		super.stop();
 		commandManager.clear();
 		drawingBitmap.recycle();
 		drawingBitmap = null;
@@ -189,7 +175,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param rect Rect of the SurfaceView.
 	 */
 	void setSurfaceSize(int width, int height) {
-		synchronized (lock) {
+		synchronized (pThread) {
 			rectSurface.set(0, 0, width, height);
 			// Initial Bitmap provided by PaintView.
 			if (drawingBitmap.getWidth() == 1 && drawingBitmap.getHeight() == 1) {
@@ -202,34 +188,12 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	/**
-	 * @param b true to keep running, false to terminate
-	 */
-	void setRunning(boolean b) {
-		keepRunning = b;
-	}
-
-	/**
-	 * Cause the thread to wait or resume. Passing false if the thread is paused will call notify()
-	 * on the waiting lock.
-	 * 
-	 * @param pause true to pause drawing, false to resume
-	 */
-	void setPaused(boolean pause) {
-		synchronized (lock) {
-			if (!pause && isPaused) {
-				lock.notify();
-			}
-			isPaused = pause;
-		}
-	}
-
-	/**
 	 * Sets a new Bitmap and recycles the old one.
 	 * 
 	 * @param bitmap New Bitmap to draw
 	 */
 	void setBitmap(Bitmap bitmap) {
-		synchronized (lock) {
+		synchronized (pThread) {
 			if (drawingBitmap != null) {
 				drawingBitmap.recycle();
 			}
@@ -277,11 +241,11 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate on the Bitmap.
 	 */
 	void startPath(float x, float y) {
-		synchronized (lock) {
-			pathToDraw.rewind();
-			translate(x, y);
-			pathToDraw.moveTo(translate.x, translate.y);
-		}
+		// synchronized (pThread) {
+		pathToDraw.rewind();
+		translate(x, y);
+		pathToDraw.moveTo(translate.x, translate.y);
+		// }
 	}
 
 	/**
@@ -294,20 +258,20 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y2 New Y-Coordinate on the Bitmap.
 	 */
 	void updatePath(float x1, float y1, float x2, float y2) {
-		synchronized (lock) {
-			translate((x1 + x2) / 2f, (y1 + y2) / 2f);
-			float cx = translate.x;
-			float cy = translate.y;
-			translate(x2, y2);
-			pathToDraw.quadTo(cx, cy, translate.x, translate.y);
-		}
+		// synchronized (pThread) {
+		translate((x1 + x2) / 2f, (y1 + y2) / 2f);
+		float cx = translate.x;
+		float cy = translate.y;
+		translate(x2, y2);
+		pathToDraw.quadTo(cx, cy, translate.x, translate.y);
+		// }
 	}
 
 	/**
 	 * Draw the currently unfinished Path on the Bitmap and rewind it.
 	 */
 	void finishPath() {
-		synchronized (lock) {
+		synchronized (pThread) {
 			Command command = new Command(bitmapPathPaint, pathToDraw);
 			commandManager.commitCommand(command, bitmapCanvas);
 			pathToDraw.rewind();
@@ -321,7 +285,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param y Y-Coordinate of the point
 	 */
 	void drawPoint(float x, float y) {
-		synchronized (lock) {
+		synchronized (pThread) {
 			translate(x, y);
 			Command command = new Command(bitmapPathPaint, translate);
 			commandManager.commitCommand(command, bitmapCanvas);
@@ -335,7 +299,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param dy Offset on the y-axis
 	 */
 	void scroll(int dx, int dy) {
-		synchronized (lock) {
+		synchronized (pThread) {
 			float surfaceZoomedWidth = rectSurface.right / zoom;
 			float surfaceZoomedHeight = rectSurface.bottom / zoom;
 
@@ -370,7 +334,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * @param scale (1..*) Factor to zoom
 	 */
 	void zoom(float scale) {
-		synchronized (lock) {
+		synchronized (pThread) {
 			if (zoom >= 1) {
 				zoom = scale;
 			}
@@ -403,7 +367,7 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	 * zoom values.
 	 */
 	void resetCanvas() {
-		synchronized (lock) {
+		synchronized (pThread) {
 			zoom = 1f;
 			scroll.set(0, 0);
 			bitmapCanvas.drawPaint(transparencyPaint);
@@ -416,13 +380,13 @@ public class PaintThread extends Thread implements ColorPickerDialog.OnPaintChan
 	}
 
 	void undo() {
-		synchronized (lock) {
+		synchronized (pThread) {
 			commandManager.undoLast(bitmapCanvas);
 		}
 	}
 
 	void redo() {
-		synchronized (lock) {
+		synchronized (pThread) {
 			commandManager.redoLast(bitmapCanvas);
 		}
 	}

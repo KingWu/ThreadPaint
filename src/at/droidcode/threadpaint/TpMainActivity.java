@@ -102,7 +102,7 @@ public class TpMainActivity extends Activity implements ToolButtonAnimator, Pref
 	public void onDestroy() {
 		Log.w(TAG, "PaintView destroyed");
 		TpPreferencesActivity.removeCallback(this);
-		paintView.terminatePaintThread();
+		paintView.stopPaintThread();
 		super.onDestroy();
 	}
 

@@ -21,7 +21,6 @@ import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
@@ -35,8 +34,7 @@ import at.droidcode.threadpaint.ui.PaintView;
  * Custom Dialog that provides a color dial to change the selected color and a SeekBar to change the
  * width of the brush's stroke.
  */
-public class ColorPickerDialog extends AlertDialog implements ShapeClickedListener,
-		SeekBar.OnSeekBarChangeListener {
+public class ColorPickerDialog extends AlertDialog implements ShapeClickedListener, SeekBar.OnSeekBarChangeListener {
 	public interface OnPaintChangedListener {
 		void colorChanged(int color);
 	}
@@ -96,8 +94,6 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 
 	@Override
 	public void onShapeClicked() {
-		Log.d(TpApplication.TAG,
-				"onShapeClicked " + Integer.toHexString(colorDialView.getShapeColor()));
 		paintListener.colorChanged(colorDialView.getShapeColor());
 		dismiss();
 	}
@@ -110,12 +106,10 @@ public class ColorPickerDialog extends AlertDialog implements ShapeClickedListen
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		// TODO Auto-generated method stub
-
 	}
 }
