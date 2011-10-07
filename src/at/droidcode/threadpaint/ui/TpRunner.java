@@ -90,8 +90,8 @@ public class TpRunner {
 	 * Stop the internal Thread.
 	 */
 	public synchronized void stop() {
-		setPaused(false);
 		running = false;
+		setPaused(false);
 		if (pThread.isAlive()) {
 			boolean retry = true;
 			while (retry) {
