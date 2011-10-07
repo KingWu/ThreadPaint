@@ -132,7 +132,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		canvas.scale(zoom, zoom);
 		canvas.translate(scroll.x, scroll.y);
 		canvas.drawPaint(checkeredPattern);
-		canvas.drawBitmap(drawingBitmap, null, rectBitmap, null);
+		canvas.drawBitmap(drawingBitmap, 0, 0, null);
 		canvas.drawPath(pathToDraw, canvasPathPaint);
 	}
 
