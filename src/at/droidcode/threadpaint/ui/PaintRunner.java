@@ -26,6 +26,7 @@ import android.graphics.Paint;
 import android.graphics.Paint.Cap;
 import android.graphics.Path;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
@@ -51,6 +52,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	private final Canvas bitmapCanvas;
 	private final Rect rectSurface;
 	private final Rect rectBitmap;
+	private final PointF surfaceCenter;
 	private final Point scroll;
 	private float zoom;
 	private final Paint bitmapPathPaint; // only to draw onto the Bitmap
@@ -86,6 +88,7 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		bitmapCanvas = new Canvas();
 		rectSurface = new Rect();
 		rectBitmap = new Rect();
+		surfaceCenter = new PointF();
 		scroll = new Point(0, 0);
 		zoom = 1f;
 
@@ -128,7 +131,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	 * @param canvas SurfaceHolder's Canvas onto which the thread draws.
 	 */
 	private void doDraw(Canvas canvas) {
-		canvas.scale(zoom, zoom);
+		// canvas.scale(zoom, zoom);
+		canvas.scale(zoom, zoom, surfaceCenter.x, surfaceCenter.y);
 		canvas.translate(scroll.x, scroll.y);
 		canvas.drawPaint(checkeredPattern);
 		canvas.drawBitmap(drawingBitmap, 0, 0, null);
@@ -180,6 +184,8 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 		synchronized (pThread) {
 			resetPerspective();
 			rectSurface.set(0, 0, width, height);
+			surfaceCenter.x = rectSurface.exactCenterX();
+			surfaceCenter.y = rectSurface.exactCenterY();
 			if (drawingBitmap == null) {
 				Log.w(TpApplication.TAG, "Creating new bitmap of surface size.");
 				drawingBitmap = Bitmap.createBitmap(width, height, Config.ARGB_8888);
@@ -298,8 +304,10 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 				scroll.set(0, 0);
 			} else {
 				scroll.offset(Math.round(dx / zoom), Math.round(dy / zoom));
-				float xMax = -1 * (rectBitmap.right - surfaceZoomedWidth);
-				float yMax = -1 * (rectBitmap.bottom - surfaceZoomedHeight);
+				float pivotX = surfaceCenter.x - (surfaceCenter.x / zoom);
+				float pivotY = surfaceCenter.y - (surfaceCenter.y / zoom);
+				float xMax = (surfaceZoomedWidth - rectBitmap.right) + pivotX;
+				float yMax = (surfaceZoomedHeight - rectBitmap.bottom) + pivotY;
 				if (scroll.x < xMax) {
 					scroll.x = Math.round(xMax);
 				}
@@ -308,11 +316,11 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 				}
 				// Make checks for upper left corner after checks for
 				// lower right corner to prevent jumping.
-				if (scroll.x > 0) {
-					scroll.x = 0;
+				if (scroll.x - pivotX > 0) {
+					scroll.x = Math.round(pivotX);
 				}
-				if (scroll.y > 0) {
-					scroll.y = 0;
+				if (scroll.y - pivotY > 0) {
+					scroll.y = Math.round(pivotY);
 				}
 			}
 		}
@@ -337,10 +345,10 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	private final Point translate = new Point();
 
 	// Translate screen coordinates to bitmap coordinates.
-	private Point translate(float x, float y) {
-		translate.x = Math.round((x - scroll.x * zoom) / zoom);
-		translate.y = Math.round((y - scroll.y * zoom) / zoom);
-		return translate;
+	private void translate(float x, float y) {
+		// Long form: (x - scroll.x * zoom - (center.x - center.x * zoom)) / zoom
+		translate.x = (int) ((x - surfaceCenter.x) / zoom + surfaceCenter.x - scroll.x);
+		translate.y = (int) ((y - surfaceCenter.y) / zoom + surfaceCenter.y - scroll.y);
 	}
 
 	// It's essential to set the canvas matrix null!
@@ -354,7 +362,6 @@ public class PaintRunner extends TpRunner implements ColorPickerDialog.OnPaintCh
 	 * Draw the currently used Paint on the whole Bitmap.
 	 */
 	void fillWithPaint() {
-		// bitmapCanvas.drawPaint(bitmapPathPaint);
 		Command command = new Command(bitmapPathPaint);
 		commandManager.commitCommand(command, bitmapCanvas);
 	}
