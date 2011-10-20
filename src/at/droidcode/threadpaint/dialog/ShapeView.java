@@ -50,6 +50,7 @@ public abstract class ShapeView extends View {
 	private float shapeDiameter;
 	private float shapeRadius;
 
+	private final RectF rectFullInset;
 	private final RectF rectFull;
 	private final RectF rectFrame;
 
@@ -87,13 +88,13 @@ public abstract class ShapeView extends View {
 
 		float r = Math.round(shapeRadius * 0.8f);
 		rectFull = new RectF(-r, -r, r, r);
+		rectFullInset = new RectF(rectFull);
+		rectFullInset.inset(1f, 1f);
 		r += indicatorFrameWidth;
 		rectFrame = new RectF(-r, -r, r, r);
 
-		Bitmap checkerboard = BitmapFactory
-				.decodeResource(c.getResources(), R.drawable.transparent);
-		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT,
-				Shader.TileMode.REPEAT);
+		Bitmap checkerboard = BitmapFactory.decodeResource(c.getResources(), R.drawable.transparent);
+		BitmapShader shader = new BitmapShader(checkerboard, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
 		checkeredPattern = new Paint();
 		checkeredPattern.setShader(shader);
 	}
@@ -164,12 +165,12 @@ public abstract class ShapeView extends View {
 	protected void onDraw(Canvas canvas) {
 		canvas.translate(centerX, centerX);
 
-		// central shape
+		// central shape with checkered background
 		if (shape == Shape.RECT) {
 			canvas.drawRect(rectFull, checkeredPattern);
 			canvas.drawRect(rectFull, shapePaint);
 		} else {
-			canvas.drawCircle(0, 0, shapeRadius, checkeredPattern);
+			canvas.drawCircle(0, 0, shapeRadius - 1f, checkeredPattern);
 			canvas.drawCircle(0, 0, shapeRadius, shapePaint);
 		}
 

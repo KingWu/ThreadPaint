@@ -212,7 +212,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	private float yTouchCoordinate;
 	private float previousX;
 	private float previousY;
+	private float oldDist;
 	private boolean hasMoved;
+	private boolean pinchToZoom;
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
@@ -234,9 +236,9 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			break;
 		}
 		// always allow pinch to zoom
-		boolean zoom = handlePinchToZoom(event);
+		handlePinchToZoom(event);
 		// if zooming, don't handle tools
-		if (!zoom) {
+		if (!pinchToZoom) {
 			switch (selectedTool) {
 			case ERASE:
 			case BRUSH:
@@ -299,20 +301,15 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		}
 	}
 
-	private boolean pinchToZoom;
-	private float oldDist;
-
 	/**
 	 * Zoom into the picture or out of it.
-	 * 
-	 * @return True if pinch to zoom was handled, false otherwise.
 	 */
-	private boolean handlePinchToZoom(MotionEvent event) {
+	private void handlePinchToZoom(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_POINTER_2_DOWN:
 			oldDist = spacing(event) / paintRunner.getZoom();
 			pinchToZoom = true;
-			return false;
+			break;
 		case MotionEvent.ACTION_MOVE:
 			if (pinchToZoom) {
 				float newDist = spacing(event);
@@ -320,12 +317,10 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 					float scale = newDist / oldDist;
 					paintRunner.zoom(scale);
 				}
-				return true;
 			}
-			return false;
+			break;
 		default:
 			pinchToZoom = false;
-			return false;
 		}
 	}
 }
