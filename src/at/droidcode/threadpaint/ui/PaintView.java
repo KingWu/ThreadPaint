@@ -233,14 +233,19 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 			}
 			break;
 		}
-		switch (selectedTool) {
-		case ERASE:
-		case BRUSH:
-			handleBrushTool(event);
-			break;
-		case MOVE:
-			handleMoveTool(event);
-			break;
+		// always allow pinch to zoom
+		boolean zoom = handlePinchToZoom(event);
+		// if zooming, don't handle tools
+		if (!zoom) {
+			switch (selectedTool) {
+			case ERASE:
+			case BRUSH:
+				handleBrushTool(event);
+				break;
+			case MOVE:
+				handleMoveTool(event);
+				break;
+			}
 		}
 		previousX = xTouchCoordinate;
 		previousY = yTouchCoordinate;
@@ -272,9 +277,6 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 		}
 	}
 
-	private boolean pinchToZoom;
-	private float oldDist;
-
 	/**
 	 * @return Distance between two points.
 	 */
@@ -285,14 +287,32 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 	}
 
 	/**
-	 * Pinch to zoom or scroll.
+	 * Scroll the picture.
 	 */
 	private void handleMoveTool(MotionEvent event) {
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_MOVE:
+			int dx = Math.round(xTouchCoordinate - previousX);
+			int dy = Math.round(yTouchCoordinate - previousY);
+			paintRunner.scroll(dx, dy);
+			break;
+		}
+	}
+
+	private boolean pinchToZoom;
+	private float oldDist;
+
+	/**
+	 * Zoom into the picture or out of it.
+	 * 
+	 * @return True if pinch to zoom was handled, false otherwise.
+	 */
+	private boolean handlePinchToZoom(MotionEvent event) {
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_POINTER_2_DOWN:
 			oldDist = spacing(event) / paintRunner.getZoom();
 			pinchToZoom = true;
-			break;
+			return false;
 		case MotionEvent.ACTION_MOVE:
 			if (pinchToZoom) {
 				float newDist = spacing(event);
@@ -300,15 +320,12 @@ public class PaintView extends SurfaceView implements SurfaceHolder.Callback, Vi
 					float scale = newDist / oldDist;
 					paintRunner.zoom(scale);
 				}
-			} else {
-				int dx = Math.round(xTouchCoordinate - previousX);
-				int dy = Math.round(yTouchCoordinate - previousY);
-				paintRunner.scroll(dx, dy);
+				return true;
 			}
-			break;
+			return false;
 		default:
 			pinchToZoom = false;
-			break;
+			return false;
 		}
 	}
 }
