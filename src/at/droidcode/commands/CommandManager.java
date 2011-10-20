@@ -27,9 +27,11 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 
 public class CommandManager {
+	private static final int MAXCOMMANDS = 256;
 	private Bitmap originalBitmap;
 	private int commandIndex; // [0..commandStack.size()]
 
+	private final Canvas bitmapCanvas;
 	private final Paint transparencyPaint;
 	private final LinkedList<Command> commandStack;
 
@@ -43,6 +45,7 @@ public class CommandManager {
 		commandIndex = 0;
 		commandStack = new LinkedList<Command>();
 
+		bitmapCanvas = new Canvas();
 		transparencyPaint = new Paint();
 		transparencyPaint.setColor(Color.TRANSPARENT);
 		transparencyPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
@@ -72,6 +75,7 @@ public class CommandManager {
 			commandIndex = 0;
 		}
 		this.originalBitmap = originalBitmap.copy(Config.ARGB_8888, true);
+		bitmapCanvas.setBitmap(this.originalBitmap);
 	}
 
 	/**
@@ -85,12 +89,19 @@ public class CommandManager {
 		command.setCanvas(canvas);
 		command.run();
 		if (commandIndex < commandStack.size()) {
-			// Remove remaining undone commands from the stack first.
+			// Remove remaining undone commands on top of the stack first.
 			for (int i = commandStack.size(); i > commandIndex; i--) {
 				commandStack.removeLast();
 			}
 		}
-		commandIndex++;
+		if (commandIndex == MAXCOMMANDS) {
+			// Apply first command to the Bitmap and remove it from the stack.
+			Command removed = commandStack.removeFirst();
+			removed.setCanvas(bitmapCanvas);
+			removed.run();
+		} else {
+			commandIndex++;
+		}
 		commandStack.add(command);
 	}
 
